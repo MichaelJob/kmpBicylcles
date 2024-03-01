@@ -1,21 +1,28 @@
+package model
+
+import data.Bicycle
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import model.Bicycle
 
 data class BicyclesUiState(
     val bicycles: List<Bicycle> = emptyList(),
-    val selectedCategory: String? = null
+    val currentBicycle: Bicycle? = null,
 ) {
-    val categories = bicycles.map { it.category }.toSet()
-    val selectedImages = bicycles.filter { it.category == selectedCategory }
+  //  val categories = bicycles.map { it.category }.toSet()
 }
 
 class BicyclesViewModel : ViewModel() {
@@ -36,12 +43,6 @@ class BicyclesViewModel : ViewModel() {
         httpClient.close()
     }
 
-    fun selectCategory(category: String) {
-        _uiState.update {
-            it.copy(selectedCategory = category)
-        }
-    }
-
     fun updateBicycles() {
         viewModelScope.launch {
             val bicycles = getBicycles()
@@ -52,9 +53,25 @@ class BicyclesViewModel : ViewModel() {
     }
 
     private suspend fun getBicycles(): List<Bicycle> {
+      //  return SupabaseService.getData()
+
         val bicycles = httpClient
             .get("https://www.michaeljob.ch/bicycles/bicycles.json")
             .body<List<Bicycle>>()
         return bicycles
+    }
+
+    private suspend fun setBicycles(): Boolean {
+        val response: HttpResponse = httpClient.post("https://bknhmpxtmpputpcsxzyw.supabase.co") {
+            contentType(ContentType.Application.Json)
+            setBody(_uiState.value.bicycles)
+        }
+        return response.status==HttpStatusCode.OK
+    }
+
+    fun selectBicycle(bicycle: Bicycle) {
+        _uiState.update {
+            it.copy(currentBicycle = bicycle)
+        }
     }
 }
