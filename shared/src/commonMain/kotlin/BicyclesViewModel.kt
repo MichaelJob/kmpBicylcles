@@ -8,18 +8,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import model.BirdImage
+import model.Bicycle
 
-data class BirdsUiState(
-    val images: List<BirdImage> = emptyList(),
+data class BicyclesUiState(
+    val bicycles: List<Bicycle> = emptyList(),
     val selectedCategory: String? = null
 ) {
-    val categories = images.map { it.category }.toSet()
-    val selectedImages = images.filter { it.category == selectedCategory }
+    val categories = bicycles.map { it.category }.toSet()
+    val selectedImages = bicycles.filter { it.category == selectedCategory }
 }
 
-class BirdsViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow<BirdsUiState>(BirdsUiState())
+class BicyclesViewModel : ViewModel() {
+    private val _uiState = MutableStateFlow<BicyclesUiState>(BicyclesUiState())
     val uiState = _uiState.asStateFlow()
 
     private val httpClient = HttpClient {
@@ -29,7 +29,7 @@ class BirdsViewModel : ViewModel() {
     }
 
     init {
-        updateImages()
+        updateBicycles()
     }
 
     override fun onCleared() {
@@ -42,19 +42,19 @@ class BirdsViewModel : ViewModel() {
         }
     }
 
-    fun updateImages() {
+    fun updateBicycles() {
         viewModelScope.launch {
-            val images = getImages()
+            val bicycles = getBicycles()
             _uiState.update {
-                it.copy(images = images)
+                it.copy(bicycles = bicycles)
             }
         }
     }
 
-    private suspend fun getImages(): List<BirdImage> {
-        val images = httpClient
-            .get("https://sebastianaigner.github.io/demo-image-api/pictures.json")
-            .body<List<BirdImage>>()
-        return images
+    private suspend fun getBicycles(): List<Bicycle> {
+        val bicycles = httpClient
+            .get("https://www.michaeljob.ch/bicycles/bicycles.json")
+            .body<List<Bicycle>>()
+        return bicycles
     }
 }

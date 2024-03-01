@@ -26,10 +26,10 @@ import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import model.BirdImage
+import model.Bicycle
 
 @Composable
-fun BirdAppTheme(
+fun BicycleAppTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
@@ -46,14 +46,14 @@ fun BirdAppTheme(
 
 @Composable
 fun App() {
-    BirdAppTheme {
-        val birdsViewModel = getViewModel(Unit, viewModelFactory { BirdsViewModel() })
-        BirdsPage(birdsViewModel)
+    BicycleAppTheme {
+        val bicyclesViewModel = getViewModel(Unit, viewModelFactory { BicyclesViewModel() })
+        BirdsPage(bicyclesViewModel)
     }
 }
 
 @Composable
-fun BirdsPage(viewModel: BirdsViewModel) {
+fun BirdsPage(viewModel: BicyclesViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     Column(
         Modifier.fillMaxSize(),
@@ -89,7 +89,7 @@ fun BirdsPage(viewModel: BirdsViewModel) {
                 modifier = Modifier.fillMaxSize().padding(horizontal = 5.dp),
                 content = {
                     items(uiState.selectedImages) {
-                        BirdImageCell(it)
+                        BicycleImageCell(it)
                     }
                 }
             )
@@ -98,10 +98,10 @@ fun BirdsPage(viewModel: BirdsViewModel) {
 }
 
 @Composable
-fun BirdImageCell(image: BirdImage) {
+fun BicycleImageCell(bicycle: Bicycle) {
     KamelImage(
-        asyncPainterResource("https://sebastianaigner.github.io/demo-image-api/${image.path}"),
-        "${image.category} by ${image.author}",
+        asyncPainterResource("https://www.michaeljob.ch/bicycles/${bicycle.imagePath}"),
+        "${bicycle.category} by ${bicycle.bikename}",
         contentScale = ContentScale.Crop,
         modifier = Modifier.fillMaxWidth().aspectRatio(1.0f)
     )

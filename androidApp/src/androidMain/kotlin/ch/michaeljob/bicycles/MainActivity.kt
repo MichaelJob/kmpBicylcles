@@ -1,4 +1,4 @@
-package com.myapplication
+package ch.michaeljob.bicycles
 
 import MainView
 import android.os.Bundle
