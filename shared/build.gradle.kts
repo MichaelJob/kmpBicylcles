@@ -42,8 +42,8 @@ kotlin {
                 api("dev.icerock.moko:mvvm-core:0.16.1") // only ViewModel, EventsDispatcher, Dispatchers.UI
                 api("dev.icerock.moko:mvvm-compose:0.16.1") // api mvvm-core, getViewModel for Compose Multiplatfrom
                 //Supabase
-                //implementation(platform("io.github.jan-tennert.supabase:bom:2.1.3"))
-               // implementation("io.github.jan-tennert.supabase:postgrest-kt")
+                implementation(platform("io.github.jan-tennert.supabase:bom:2.1.3"))
+                implementation("io.github.jan-tennert.supabase:postgrest-kt")
             }
         }
         val androidMain by getting {
