@@ -105,7 +105,7 @@ fun BicycleDetailPage(viewModel: BicyclesViewModel) {
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier.fillMaxWidth().weight(0.95F)) {
-            CurrentBicycleImage(uiState.currentBicycle!!)
+            CurrentBicycleImage(uiState.currentBicycle!!, showSmall = uiState.showEdit)
             Text(
                 text = "Bicycle details:",
                 style = typography.h6,
@@ -197,8 +197,8 @@ fun BicycleEditDetails(currentBicycle: Bicycle) {
             )
             BicycleEditField(
                 label = "Category:",
-                value = currentBicycle.bikename,
-                onValueChange = { currentBicycle.bikename = it },
+                value = currentBicycle.category,
+                onValueChange = { currentBicycle.category = it },
             )
             BicycleEditField(
                 label = "Year:",
@@ -269,11 +269,17 @@ fun BicycleImageCell(bicycle: Bicycle, viewModel: BicyclesViewModel) {
 }
 
 @Composable
-fun CurrentBicycleImage(bicycle: Bicycle) {
-    KamelImage(
-        asyncPainterResource("https://www.michaeljob.ch/bicycles/${bicycle.imagePath}"),
-        "${bicycle.category} by ${bicycle.bikename}",
-        contentScale = ContentScale.Inside,
-        modifier = Modifier.fillMaxWidth().aspectRatio(1.0f).padding(5.dp)
-    )
+fun CurrentBicycleImage(bicycle: Bicycle, showSmall: Boolean = false) {
+    Row (
+        modifier = Modifier.fillMaxWidth().padding(10.dp),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        KamelImage(
+            asyncPainterResource("https://www.michaeljob.ch/bicycles/${bicycle.imagePath}"),
+            "${bicycle.category} by ${bicycle.bikename}",
+            contentScale = ContentScale.Inside,
+            modifier = Modifier.fillMaxWidth(if (showSmall) 0.2F else 1.0F).aspectRatio(1.0f).padding(5.dp)
+        )
+    }
+
 }

@@ -7,9 +7,9 @@ import kotlin.random.Random
 data class Bicycle(
     val id : Int = Random.Default.nextInt(),
     var bikename: String = "",
-    val category: String = "",
+    var category: String = "",
     var description : String = "",
     var year : String = "",
     var price : String = "",
-    val imagePath : String = "",
+    var imagePath : String = "",
 )
