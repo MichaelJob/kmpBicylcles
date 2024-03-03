@@ -4,7 +4,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
-//import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.storage.storage
 
 object SupabaseService {
 
@@ -16,11 +16,6 @@ object SupabaseService {
     }
 
     suspend fun storeNewBicycle(bicycle: Bicycle) {
-/* in older version 1.4.7
-        supabaseClient.postgrest
-            .from("bicycles")
-            .insert(bicycle)
-  */
         supabaseClient.from("bicycles").upsert(value = bicycle)
     }
 
@@ -40,5 +35,19 @@ object SupabaseService {
             .select()
             .decodeList<Bicycle>()
     }
+
+    suspend fun uploadImage(imagePath: String, image: ByteArray) {
+        supabaseClient.storage
+            .from("bicycles-imgs")
+            .upload(path = imagePath, data = image, upsert = false)
+    }
+
+    suspend fun downloadImage(imagePath: String) : ByteArray {
+        return supabaseClient.storage
+            .from("bicycles-imgs")
+            .downloadAuthenticated(path = imagePath)
+    }
+
+
 
 }

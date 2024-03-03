@@ -54,6 +54,12 @@ class BicyclesViewModel : ViewModel() {
         }
     }
 
+    fun createNewBicycle() {
+        _uiState.update {
+            it.copy(currentBicycle = Bicycle(), showDetail = true, showEdit = true)
+        }
+    }
+
     fun save() {
         viewModelScope.launch {
             uiState.value.currentBicycle?.let { saveBicycle(it) }
