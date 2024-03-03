@@ -18,10 +18,12 @@ import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.rounded.List
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -65,6 +67,15 @@ fun BicyclesUI(viewModel: BicyclesViewModel) {
                         )
                     }
                 }
+                IconButton(
+                    onClick = { viewModel.updateBicycles() },
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Refresh,
+                        contentDescription = "Reload bicycles"
+                    )
+                }
                 if (!uiState.showDetail) {
                     IconButton(onClick = { viewModel.createNewBicycle() }) {
                         Icon(
@@ -88,12 +99,13 @@ fun BicyclesUI(viewModel: BicyclesViewModel) {
 @Composable
 fun BicyclesPage(viewModel: BicyclesViewModel) {
     val uiState by viewModel.uiState.collectAsState()
+    val bicycles by mutableStateOf(uiState.bicycles)
     LazyColumn(
         modifier = Modifier.fillMaxWidth().padding(30.dp),
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        items(uiState.bicycles) {
+        items(bicycles) {
             BicycleImageCell(it, viewModel)
         }
     }

@@ -60,6 +60,9 @@ fun BicycleDetailPage(viewModel: BicyclesViewModel) {
                 Button(onClick = { viewModel.showEdit(false) }) {
                     Text("Back")
                 }
+                Button(onClick = { viewModel.remove() }) {
+                    Text("Remove bicycle")
+                }
                 Button(onClick = { viewModel.save() }) {
                     Text("Save")
                 }

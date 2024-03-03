@@ -3,6 +3,7 @@ package model
 import data.Bicycle
 import data.SupabaseService
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -23,7 +24,7 @@ class BicyclesViewModel : ViewModel() {
         updateBicycles()
     }
 
-    private fun updateBicycles() {
+    fun updateBicycles() {
         viewModelScope.launch {
             val bicycles = getBicycles()
             _uiState.update {
@@ -63,13 +64,30 @@ class BicyclesViewModel : ViewModel() {
     fun save() {
         viewModelScope.launch {
             uiState.value.currentBicycle?.let { saveBicycle(it) }
-        }
-        _uiState.update {
-            it.copy(showEdit = false)
+            updateStateToMainView()
         }
     }
 
     private suspend fun saveBicycle(bicycle: Bicycle) {
         SupabaseService.storeNewBicycle(bicycle)
+    }
+
+    fun remove() {
+        viewModelScope.launch {
+            uiState.value.currentBicycle?.let { removeBicycle(it) }
+            updateStateToMainView()
+        }
+    }
+
+    private suspend fun updateStateToMainView() {
+        delay(100)
+        _uiState.update {
+            it.copy(showEdit = false, showDetail = false, currentBicycle = null)
+        }
+        updateBicycles()
+    }
+
+    private suspend fun removeBicycle(bicycle: Bicycle) {
+        SupabaseService.deleteBicycle(bicycle.id)
     }
 }

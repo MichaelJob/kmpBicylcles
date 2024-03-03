@@ -8,7 +8,7 @@ import io.github.jan.supabase.storage.storage
 
 object SupabaseService {
 
-    var supabaseClient: SupabaseClient = createSupabaseClient(
+    private var supabaseClient: SupabaseClient = createSupabaseClient(
         supabaseUrl = "https://bknhmpxtmpputpcsxzyw.supabase.co",
         supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrbmhtcHh0bXBwdXRwY3N4enl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkyMTI1NjEsImV4cCI6MjAyNDc4ODU2MX0.iP0p92RdoBEonJfmuEfHE0GT3amgEpxdL4dm_dEWFgM"
     ) {
