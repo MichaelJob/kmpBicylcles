@@ -1,16 +1,24 @@
 package ui
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.rounded.List
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -18,78 +26,91 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import data.Bicycle
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import data.Bicycle
 import model.BicyclesViewModel
+
+@Composable
+fun BicyclesUI(viewModel: BicyclesViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
+    Column(
+        Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Top
+    ) {
+        TopAppBar {
+            Row (
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ){
+                    Text(
+                        text = if (uiState.showDetail) "Your bicycle" else "Bicycles",
+                        modifier = Modifier.padding(10.dp),
+                        style = typography.h6,
+                    )
+                    if (uiState.showDetail) {
+                        Icon(
+                            imageVector = Icons.Filled.Favorite,
+                            contentDescription = "Detail"
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Rounded.List,
+                            contentDescription = "List"
+                        )
+                    }
+                }
+                if (!uiState.showDetail) {
+                    IconButton(onClick = { viewModel.createNewBicycle() }) {
+                        Icon(
+                            imageVector = Icons.Filled.AddCircle,
+                            contentDescription = "New bicycle"
+                        )
+                    }
+                }
+            }
+        }
+        if (uiState.showDetail) {
+            BicycleDetailPage(viewModel)
+        } else {
+            BicyclesPage(viewModel)
+        }
+    }
+
+}
 
 
 @Composable
 fun BicyclesPage(viewModel: BicyclesViewModel) {
     val uiState by viewModel.uiState.collectAsState()
-    Column(
-        Modifier.fillMaxSize(),
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth().padding(30.dp),
+        verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
     ) {
-        AnimatedVisibility(uiState.currentBicycle==null) {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth().padding(10.dp),
-                //  verticalArrangement = Arrangement.SpaceEvenly,
-            )  {
-                items(uiState.bicycles) {
-                    BicycleImageCell(it, viewModel)
-                }
-            }
-        }
-
-        AnimatedVisibility(uiState.currentBicycle!=null) {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(5.dp),
-                modifier = Modifier.fillMaxSize().padding(horizontal = 5.dp),
-                content = {
-                    item {
-                        CurrentBicycleImage(uiState.currentBicycle!!)
-                    }
-                    item {
-                        BicycleDetails(uiState.currentBicycle!!)
-                    }
-                }
-            )
+        items(uiState.bicycles) {
+            BicycleImageCell(it, viewModel)
         }
     }
 }
 
-@Composable
-fun BicycleDetails(currentBicycle: Bicycle) {
-    Column {
-        Text("Bicycle details")
-        Text("Bicycle name: ${currentBicycle.bikename}")
-        Text("Category: ${currentBicycle.category}")
-        Text("Year: ${currentBicycle.year}")
-        Text("Price: ${currentBicycle.priceCent}")
-        Text("Description: ${currentBicycle.description}")
-    }
-}
 
 @Composable
 fun BicycleImageCell(bicycle: Bicycle, viewModel: BicyclesViewModel) {
     KamelImage(
-        asyncPainterResource("https://www.michaeljob.ch/bicycles/${bicycle.imagePath}"),
-        "${bicycle.category} by ${bicycle.bikename}",
+        resource = asyncPainterResource(bicycle.getBicycleImagePath()),
+        contentDescription = bicycle.bikename,
         contentScale = ContentScale.Crop,
-        modifier = Modifier.fillMaxWidth().aspectRatio(1.0f).padding(5.dp).clickable {
-            viewModel.selectBicycle(bicycle)
-        }
-    )
-}
-
-@Composable
-fun CurrentBicycleImage(bicycle: Bicycle) {
-    KamelImage(
-        asyncPainterResource("https://www.michaeljob.ch/bicycles/${bicycle.imagePath}"),
-        "${bicycle.category} by ${bicycle.bikename}",
-        contentScale = ContentScale.Inside,
-        modifier = Modifier.fillMaxWidth().aspectRatio(1.0f).padding(5.dp)
+        modifier = Modifier.fillMaxWidth()
+            .aspectRatio(1.0f)
+            .padding(5.dp)
+            .clickable {
+                viewModel.selectBicycle(bicycle)
+            }
     )
 }
