@@ -14,19 +14,28 @@ data class BicyclesUiState(
     val currentBicycle: Bicycle? = null,
     val showDetail: Boolean = false,
     val showEdit: Boolean = false,
+    val email: String = "",//budiman.job@gmail.com",
+    val password: String = "",//pw123456789",
+    val isLoggedIn: Boolean = false,
 )
 
 class BicyclesViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow<BicyclesUiState>(BicyclesUiState())
+    private val _uiState = MutableStateFlow(BicyclesUiState())
     val uiState = _uiState.asStateFlow()
 
+
     init {
-        updateBicycles()
+        //TODO: loadPrefs()
+        if (uiState.value.email.isNotEmpty() && uiState.value.password.isNotEmpty()) {
+            signIn()
+        }
     }
 
-    fun updateBicycles() {
+    private fun updateBicycles() {
         viewModelScope.launch {
-            val bicycles = getBicycles()
+            val bicycles = getBicycles().onEach { bicycle ->
+                bicycle.storagePath = SupabaseService.downloadImage(bicycle.imagepath)
+            }
             _uiState.update {
                 it.copy(bicycles = bicycles)
             }
@@ -61,15 +70,30 @@ class BicyclesViewModel : ViewModel() {
         }
     }
 
+    fun updateEmail(email: String) {
+        _uiState.update {
+            it.copy(email = email)
+        }
+    }
+
+    fun updatePW(pw: String) {
+        _uiState.update {
+            it.copy(password = pw)
+        }
+    }
+
     fun save() {
         viewModelScope.launch {
-            uiState.value.currentBicycle?.let { saveBicycle(it) }
+            uiState.value.currentBicycle?.let { currentBicycleToStore ->
+                saveBicycle(currentBicycleToStore)
+            }
             updateStateToMainView()
         }
     }
 
-    private suspend fun saveBicycle(bicycle: Bicycle) {
-        SupabaseService.storeNewBicycle(bicycle)
+    private suspend fun saveBicycle(currentBicycleToStore: Bicycle) {
+        val storedbicycle = SupabaseService.storeNewBicycle(currentBicycleToStore)
+        //TODO: show toast bikename stored?
     }
 
     fun remove() {
@@ -80,7 +104,7 @@ class BicyclesViewModel : ViewModel() {
     }
 
     private suspend fun updateStateToMainView() {
-        delay(100)
+        delay(50)
         _uiState.update {
             it.copy(showEdit = false, showDetail = false, currentBicycle = null)
         }
@@ -90,4 +114,47 @@ class BicyclesViewModel : ViewModel() {
     private suspend fun removeBicycle(bicycle: Bicycle) {
         SupabaseService.deleteBicycle(bicycle.id)
     }
+
+
+    fun signUp() {
+        viewModelScope.launch {
+            println("uiState.value.email, uiState.value.password" + uiState.value.email + uiState.value.password)
+            SupabaseService.signUpNewUser(uiState.value.email, uiState.value.password)
+            _uiState.update {
+                it.copy(isLoggedIn = true)
+            }
+        }
+    }
+
+    fun signIn() {
+        if (!uiState.value.isLoggedIn) {
+            viewModelScope.launch {
+                SupabaseService.signInWithEmail(uiState.value.email, uiState.value.password)
+                _uiState.update {
+                    it.copy(isLoggedIn = true)
+                }
+                updateBicycles()
+            }
+        }
+    }
+
+    fun logout() {
+        if (uiState.value.isLoggedIn) {
+            viewModelScope.launch {
+                SupabaseService.logout()
+                _uiState.update {
+                    it.copy(
+                        bicycles = emptyList(),
+                        currentBicycle = null,
+                        showDetail = false,
+                        showEdit = false,
+                        password = "",
+                        isLoggedIn = false
+                    )
+                }
+            }
+        }
+    }
+
+
 }

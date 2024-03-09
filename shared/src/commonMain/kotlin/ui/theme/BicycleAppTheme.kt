@@ -1,4 +1,4 @@
-package ui
+package ui.theme
 
 import androidx.compose.foundation.shape.AbsoluteCutCornerShape
 import androidx.compose.material.MaterialTheme
@@ -11,11 +11,14 @@ fun BicycleAppTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colors = MaterialTheme.colors.copy(primary = Color.Black),
+        colors = MaterialTheme.colors.copy(
+            primary = blue900,
+            secondary = blue300
+        ),
         shapes = MaterialTheme.shapes.copy(
-            small = AbsoluteCutCornerShape(0.dp),
-            medium = AbsoluteCutCornerShape(0.dp),
-            large = AbsoluteCutCornerShape(0.dp)
+            small = AbsoluteCutCornerShape(2.dp),
+            medium = AbsoluteCutCornerShape(4.dp),
+            large = AbsoluteCutCornerShape(6.dp)
         )
     ) {
         content()
