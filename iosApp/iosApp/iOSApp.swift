@@ -11,7 +11,7 @@ struct iOSApp: App {
 		WindowGroup {
 		    ZStack {
 		        Color.white.ignoresSafeArea(.all) // status bar color
-			    ContentView()
+			        ContentView()
 			}.preferredColorScheme(.light)
 		}
 	}
