@@ -54,8 +54,8 @@ kotlin {
                 api("androidx.activity:activity-compose:1.8.2")
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.12.0")
-                implementation("androidx.startup:startup-runtime:1.1.1")
                 implementation("io.ktor:ktor-client-android:2.3.8")
+                api("androidx.startup:startup-runtime:1.1.1")
             }
         }
         val iosX64Main by getting
