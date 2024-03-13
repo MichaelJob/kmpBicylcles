@@ -2,7 +2,7 @@ import androidx.compose.runtime.Composable
 import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
 import model.BicyclesViewModel
-import ui.BicycleAppTheme
+import ui.theme.BicycleAppTheme
 import ui.BicyclesUI
 
 

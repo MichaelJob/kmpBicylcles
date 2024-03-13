@@ -15,8 +15,8 @@ kotlin {
 
     cocoapods {
         version = "1.0.0"
-        summary = "Some description for the Shared Module"
-        homepage = "Link to the Shared Module homepage"
+        summary = "bicycles kmmp"
+        homepage = "-"
         ios.deploymentTarget = "14.1"
         podfile = project.file("../iosApp/Podfile")
         framework {
@@ -45,6 +45,9 @@ kotlin {
                 implementation(project.dependencies.platform("io.github.jan-tennert.supabase:bom:2.1.5"))
                 implementation("io.github.jan-tennert.supabase:postgrest-kt")
                 implementation("io.github.jan-tennert.supabase:storage-kt")
+                implementation("io.github.jan-tennert.supabase:gotrue-kt")
+                //datastore preferences
+                implementation("androidx.datastore:datastore-preferences-core:1.1.0-beta02")
             }
         }
         val androidMain by getting {
@@ -53,6 +56,8 @@ kotlin {
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.12.0")
                 implementation("io.ktor:ktor-client-android:2.3.8")
+                //startuo context for android datastore preferences
+                api("androidx.startup:startup-runtime:1.1.1")
             }
         }
         val iosX64Main by getting
@@ -83,10 +88,10 @@ android {
         minSdk = (findProperty("android.minSdk") as String).toInt()
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlin {
-        jvmToolchain(11)
+        jvmToolchain(17)
     }
 }

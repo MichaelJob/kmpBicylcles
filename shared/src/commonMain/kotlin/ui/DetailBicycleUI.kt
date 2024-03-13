@@ -1,6 +1,5 @@
 package ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +17,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import data.Bicycle
@@ -31,15 +29,16 @@ import model.BicyclesViewModel
 fun BicycleDetailPage(viewModel: BicyclesViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     Column(
-        Modifier.fillMaxSize(),
+        Modifier.fillMaxSize().padding(horizontal = 5.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(modifier = Modifier.fillMaxWidth().weight(0.95F)) {
+        Column(modifier = Modifier.fillMaxWidth().weight(0.9F)) {
             CurrentBicycleImage(uiState.currentBicycle!!, showSmall = uiState.showEdit)
             Text(
                 text = "Bicycle details:",
                 style = typography.h6,
+                modifier = Modifier.padding(10.dp)
             )
             if (uiState.showEdit) {
                 BicycleEditDetails(uiState.currentBicycle!!)
@@ -48,10 +47,9 @@ fun BicycleDetailPage(viewModel: BicyclesViewModel) {
             }
         }
         Row(
-            modifier = Modifier.fillMaxWidth()
-                .weight(0.05F)
-                .background(Color.DarkGray)
-                .padding(horizontal = 30.dp),
+            modifier = Modifier.fillMaxSize()
+                .weight(0.1F)
+                .padding(vertical = 4.dp, horizontal = 30.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
@@ -99,7 +97,7 @@ fun BicycleDetails(currentBicycle: Bicycle) {
 @Composable
 fun BicycleDetailRow(label: String, value: String) {
     Row(
-        Modifier.fillMaxWidth().padding(20.dp),
+        Modifier.fillMaxWidth().padding(2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(text = label)
@@ -110,7 +108,7 @@ fun BicycleDetailRow(label: String, value: String) {
 @Composable
 fun BicycleDetailColumn(label: String, value: String) {
     Column (
-        Modifier.fillMaxWidth().padding(20.dp),
+        Modifier.fillMaxWidth().padding(2.dp),
     ) {
         Text(label)
         Text(value)
@@ -120,16 +118,15 @@ fun BicycleDetailColumn(label: String, value: String) {
 @Composable
 fun CurrentBicycleImage(bicycle: Bicycle, showSmall: Boolean = false) {
     Row (
-        modifier = Modifier.fillMaxWidth().padding(10.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
         KamelImage(
-            resource = asyncPainterResource(bicycle.getBicycleImagePath()),
+            resource = asyncPainterResource(bicycle.storagePath),
             contentDescription = bicycle.bikename,
-            contentScale = ContentScale.Inside,
+            contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxWidth(if (showSmall) 0.2F else 1.0F)
                 .aspectRatio(1.0f)
-                .padding(5.dp)
         )
     }
 

@@ -2,71 +2,105 @@ package ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import data.Bicycle
+import model.BicyclesViewModel
+
 
 
 @Composable
-fun BicycleEditDetails(currentBicycle: Bicycle) {
-    val scrollState = rememberScrollState()
-    Column(
-        verticalArrangement = Arrangement.spacedBy(5.dp),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp).verticalScroll(scrollState),
-        content = {
-            BicycleEditField(
-                label = "Bicycle name:",
-                value = currentBicycle.bikename,
-                onValueChange = { currentBicycle.bikename = it },
-            )
-            BicycleEditField(
-                label = "Category:",
-                value = currentBicycle.category,
-                onValueChange = { currentBicycle.category = it },
-            )
-            BicycleEditField(
-                label = "Year:",
-                value = currentBicycle.year,
-                onValueChange = { currentBicycle.year = it },
-            )
-            BicycleEditField(
-                label = "Price:",
-                value = currentBicycle.price,
-                onValueChange = { currentBicycle.price = it },
-            )
-            BicycleEditField(
-                label = "Description:",
-                singleLine = false,
-                value = currentBicycle.description,
-                onValueChange = { currentBicycle.description = it },
-            )
+fun SignUpIn(viewModel: BicyclesViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
+    if (uiState.email.isEmpty() || uiState.isLoggedIn.not()) {
+        SignUp(viewModel)
+    } else {
+        SignIn(viewModel)
+    }
+}
+
+@Composable
+fun SignUp(viewModel: BicyclesViewModel) {
+    SignInUpColumn {
+        Text(text = "Sign up to save your bicycles", style = typography.h6)
+        EmailPWFields(viewModel)
+        Button(onClick = {
+            viewModel.signUp()
+        }) {
+            Text("Sign up as new user")
         }
+    }
+}
+
+
+@Composable
+fun SignIn(viewModel: BicyclesViewModel) {
+    SignInUpColumn{
+        Text(text = "Sign in to get your bicycles data", style = typography.h6)
+        EmailPWFields(viewModel)
+        Button(onClick = {
+            viewModel.signIn()
+        }) {
+            Text("Log in")
+        }
+    }
+}
+
+@Composable
+fun SignInUpColumn(content : @Composable ColumnScope.() -> Unit) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(25.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxSize().padding(vertical = 55.dp, horizontal = 25.dp),
+        content = content
+    )
+}
+
+@Composable
+fun EmailPWFields(viewModel: BicyclesViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
+    BicycleSignField(
+        label = "E-Mail:",
+        value = uiState.email,
+        onValueChange = {
+            viewModel.updateEmail(it)
+        },
+    )
+    BicycleSignField(
+        label = "Password:",
+        value = uiState.password,
+        onValueChange = {
+            viewModel.updatePW(it)
+        },
     )
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun BicycleEditField(label: String, value: String, singleLine: Boolean = true, onValueChange: (String) -> Unit) {
+fun BicycleSignField(label: String, value: String, onValueChange: (String) -> Unit) {
     val keyboard = LocalSoftwareKeyboardController.current
     var stateValue by remember { mutableStateOf(value) }
     OutlinedTextField(
@@ -75,7 +109,7 @@ fun BicycleEditField(label: String, value: String, singleLine: Boolean = true, o
             stateValue = it //updates view
             onValueChange.invoke(it) //updates model
                         },
-        singleLine = singleLine,
+        singleLine = true,
         trailingIcon = {
             IconButton(onClick = {
                 keyboard?.hide()
