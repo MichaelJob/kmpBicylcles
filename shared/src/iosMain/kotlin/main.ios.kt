@@ -1,18 +1,16 @@
 
 import androidx.compose.ui.window.ComposeUIViewController
 import data.ApplicationComponent
+import platform.UIKit.UIViewController
 
 actual fun getPlatformName(): String = "iOS"
 
-fun MainViewController() {
+fun initialize() {
+    ApplicationComponent.init()
+}
 
-    //FIXME: Initialize the application component for PreferencesDataStore
-    fun initialize() {
-        ApplicationComponent.init()
-    }
-
-
-    ComposeUIViewController {
+fun MainViewController(): UIViewController {
+    return ComposeUIViewController {
         App()
     }
 }
