@@ -35,10 +35,10 @@ import model.BicyclesViewModel
 @Composable
 fun SignUpIn(viewModel: BicyclesViewModel) {
     val uiState by viewModel.uiState.collectAsState()
-    if (uiState.email.isEmpty() || uiState.isLoggedIn.not()) {
-        SignUp(viewModel)
-    } else {
+    if (uiState.isRegistered) {
         SignIn(viewModel)
+    } else {
+        SignUp(viewModel)
     }
 }
 

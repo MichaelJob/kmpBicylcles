@@ -2,9 +2,8 @@ import androidx.compose.runtime.Composable
 import dev.icerock.moko.mvvm.compose.getViewModel
 import dev.icerock.moko.mvvm.compose.viewModelFactory
 import model.BicyclesViewModel
-import ui.theme.BicycleAppTheme
 import ui.BicyclesUI
-
+import ui.theme.BicycleAppTheme
 
 @Composable
 fun App() {

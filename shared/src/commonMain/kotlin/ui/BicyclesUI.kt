@@ -105,7 +105,7 @@ fun BicyclesUI(viewModel: BicyclesViewModel) {
                     BicyclesPage(viewModel)
                 }
             } else {
-                //user is logged out (or first app start)
+                //user is logged out (or first app start - not registered)
                 SignUpIn(viewModel)
             }
         }

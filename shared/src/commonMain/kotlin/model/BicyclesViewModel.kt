@@ -1,7 +1,9 @@
 package model
 
+
 import data.Bicycle
 import data.SupabaseService
+import data.coreComponent
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,20 +16,25 @@ data class BicyclesUiState(
     val currentBicycle: Bicycle? = null,
     val showDetail: Boolean = false,
     val showEdit: Boolean = false,
-    val email: String = "",//budiman.job@gmail.com",
-    val password: String = "",//pw123456789",
+    val email: String = "",
+    val password: String = "",
     val isLoggedIn: Boolean = false,
+    val isRegistered: Boolean = false,
 )
 
 class BicyclesViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(BicyclesUiState())
     val uiState = _uiState.asStateFlow()
 
-
     init {
-        //TODO: loadPrefs()
-        if (uiState.value.email.isNotEmpty() && uiState.value.password.isNotEmpty()) {
-            signIn()
+        viewModelScope.launch {
+            val email = coreComponent.appPreferences.getEmail()
+            val pw = coreComponent.appPreferences.getPassword()
+            val isRegistered = coreComponent.appPreferences.isRegistered()
+            _uiState.update {
+                it.copy(email = email, password = pw, isRegistered = isRegistered)
+            }
+            //signIn()
         }
     }
 
@@ -71,12 +78,18 @@ class BicyclesViewModel : ViewModel() {
     }
 
     fun updateEmail(email: String) {
+        viewModelScope.launch {
+            coreComponent.appPreferences.changeEmail(email)
+        }
         _uiState.update {
             it.copy(email = email)
         }
     }
 
     fun updatePW(pw: String) {
+        viewModelScope.launch {
+            coreComponent.appPreferences.changePassword(pw)
+        }
         _uiState.update {
             it.copy(password = pw)
         }
@@ -119,15 +132,16 @@ class BicyclesViewModel : ViewModel() {
     fun signUp() {
         viewModelScope.launch {
             println("uiState.value.email, uiState.value.password" + uiState.value.email + uiState.value.password)
-            SupabaseService.signUpNewUser(uiState.value.email, uiState.value.password)
+          //  SupabaseService.signUpNewUser(uiState.value.email, uiState.value.password)
+            coreComponent.appPreferences.changeRegistered(true)
             _uiState.update {
-                it.copy(isLoggedIn = true)
+                it.copy(isLoggedIn = true, isRegistered = true)
             }
         }
     }
 
     fun signIn() {
-        if (!uiState.value.isLoggedIn) {
+        if (!uiState.value.isLoggedIn && uiState.value.email.isNotEmpty() && uiState.value.password.isNotEmpty()) {
             viewModelScope.launch {
                 SupabaseService.signInWithEmail(uiState.value.email, uiState.value.password)
                 _uiState.update {
