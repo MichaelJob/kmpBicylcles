@@ -14,11 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import data.Bicycle
@@ -45,7 +46,7 @@ fun BicyclesUI(viewModel: BicyclesViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     Box(
         Modifier
-            .background(MaterialTheme.colors.background)
+            .background(colors.background)
             .windowInsetsPadding(WindowInsets.safeDrawing) //Box for safe areas
     ) {
         // App Content goes here
@@ -88,7 +89,7 @@ fun BicyclesUI(viewModel: BicyclesViewModel) {
                             )
                         }
                     }
-                    if (true) { //FIXME: show logout button only if logged in
+                    if (uiState.isLoggedIn) {
                         IconButton(onClick = { viewModel.logout() }) {
                             Icon(
                                 imageVector = Icons.Filled.ExitToApp,
@@ -118,7 +119,7 @@ fun BicyclesPage(viewModel: BicyclesViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val bicycles by mutableStateOf(uiState.bicycles)
     LazyColumn(
-        modifier = Modifier.fillMaxWidth().padding(30.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp, vertical = 10.dp),
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -133,26 +134,50 @@ fun BicyclesPage(viewModel: BicyclesViewModel) {
                 CircularProgressIndicator(modifier = Modifier.padding(40.dp))
             }
         }
-        items(bicycles) {
-            BicycleImageCell(it, viewModel)
+        itemsIndexed(bicycles) { index, bicycle ->
+            BicycleImageCell(index+1, bicycle, viewModel)
         }
     }
 }
 
 
 @Composable
-fun BicycleImageCell(bicycle: Bicycle, viewModel: BicyclesViewModel) {
-    KamelImage(
-        resource = asyncPainterResource(bicycle.storagePath),
-        contentDescription = bicycle.bikename,
-        contentScale = ContentScale.Crop,
-        onLoading = { CircularProgressIndicator() },
-        onFailure = { Text("loading failed") },
-        modifier = Modifier.fillMaxWidth()
-            .aspectRatio(1.0f)
-            .padding(5.dp)
-            .clickable {
-                viewModel.selectBicycle(bicycle)
-            }
-    )
+fun BicycleImageCell(index: Int, bicycle: Bicycle, viewModel: BicyclesViewModel) {
+    Box {
+        KamelImage(
+            resource = asyncPainterResource(bicycle.storagePath),
+            contentDescription = bicycle.bikename,
+            contentScale = ContentScale.Crop,
+            onLoading = { CircularProgressIndicator() },
+            onFailure = { Text("loading failed") },
+            modifier = Modifier.fillMaxWidth()
+                .aspectRatio(1.0f)
+                .padding(5.dp)
+                .clickable {
+                    viewModel.selectBicycle(bicycle)
+                }
+        )
+        Row {
+            val secondayColor = colors.onSecondary
+            Text(
+                text = "$index",
+                style = typography.h6,
+                color = colors.onPrimary,
+                modifier = Modifier.padding(8.dp)
+                    .drawBehind {
+                        drawCircle(
+                            color = secondayColor,
+                            radius = this.size.maxDimension*0.75F
+                        )
+                    },
+            )
+            Text(
+                text = bicycle.bikename,
+                style = typography.h6,
+                modifier = Modifier.padding(top=8.dp, bottom=8.dp, start=14.dp),
+            )
+
+        }
+    }
+
 }

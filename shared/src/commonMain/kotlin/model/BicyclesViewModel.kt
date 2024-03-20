@@ -18,6 +18,7 @@ data class BicyclesUiState(
     val showEdit: Boolean = false,
     val email: String = "",
     val password: String = "",
+    val errorMsg: String = "",
     val isLoggedIn: Boolean = false,
     val isRegistered: Boolean = false,
 )
@@ -132,7 +133,7 @@ class BicyclesViewModel : ViewModel() {
     fun signUp() {
         viewModelScope.launch {
             println("uiState.value.email, uiState.value.password" + uiState.value.email + uiState.value.password)
-          //  SupabaseService.signUpNewUser(uiState.value.email, uiState.value.password)
+            SupabaseService.signUpNewUser(uiState.value.email, uiState.value.password)
             coreComponent.appPreferences.changeRegistered(true)
             _uiState.update {
                 it.copy(isLoggedIn = true, isRegistered = true)
@@ -143,11 +144,17 @@ class BicyclesViewModel : ViewModel() {
     fun signIn() {
         if (!uiState.value.isLoggedIn && uiState.value.email.isNotEmpty() && uiState.value.password.isNotEmpty()) {
             viewModelScope.launch {
-                SupabaseService.signInWithEmail(uiState.value.email, uiState.value.password)
-                _uiState.update {
-                    it.copy(isLoggedIn = true)
+                val logInErrorMsg = SupabaseService.signInWithEmail(uiState.value.email, uiState.value.password)
+                if (logInErrorMsg=="") {
+                    _uiState.update {
+                        it.copy(isLoggedIn = true, errorMsg = "")
+                    }
+                    updateBicycles()
+                } else {
+                    _uiState.update {
+                        it.copy(isLoggedIn = false, errorMsg = logInErrorMsg)
+                    }
                 }
-                updateBicycles()
             }
         }
     }

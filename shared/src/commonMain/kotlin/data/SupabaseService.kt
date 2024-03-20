@@ -2,6 +2,7 @@ package data
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
+import io.github.jan.supabase.exceptions.BadRequestRestException
 import io.github.jan.supabase.gotrue.Auth
 import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
@@ -25,18 +26,22 @@ object SupabaseService {
     }
 
     suspend fun signUpNewUser(mail: String, pw: String) {
-        println("SupabaseService signup new user: mail, pw" + mail + pw)
         supabaseClient.auth.signUpWith(Email) {
             email = mail
             password = pw
         }
     }
 
-    suspend fun signInWithEmail(mail: String, pw: String) {
-        supabaseClient.auth.signInWith(Email) {
-            email = mail
-            password = pw
+    suspend fun signInWithEmail(mail: String, pw: String): String {
+        try {
+            supabaseClient.auth.signInWith(Email) {
+                email = mail
+                password = pw
+            }
+        } catch (ex : BadRequestRestException){
+          return "Error: ${ex.message}"
         }
+        return ""
     }
 
     suspend fun logout() {

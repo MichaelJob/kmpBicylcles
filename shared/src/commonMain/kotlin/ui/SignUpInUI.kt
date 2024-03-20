@@ -66,6 +66,7 @@ fun SignIn(viewModel: BicyclesViewModel) {
         }) {
             Text("Log in")
         }
+        Text(text = viewModel.uiState.value.errorMsg, style = typography.caption)
     }
 }
 
