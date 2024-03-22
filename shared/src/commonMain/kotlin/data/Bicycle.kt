@@ -1,5 +1,6 @@
 package data
 
+import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
@@ -15,5 +16,9 @@ data class Bicycle @OptIn(ExperimentalSerializationApi::class) constructor(
     @EncodeDefault var price : String = "",
     @EncodeDefault var imagepath : String = "defaultbicycle.jpg",
 ){
-   var storagePath: String = ""
+   var storagePath: String = "https://www.michaeljob.ch/bicycles/defaultbicycle.jpg"
+   var imageBitmap: ImageBitmap? = null
 }
+
+
+expect fun ByteArray.toImageBitmap(): ImageBitmap?

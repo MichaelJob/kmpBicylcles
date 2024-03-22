@@ -1,5 +1,6 @@
 package ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,9 +38,9 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import data.Bicycle
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
 import model.BicyclesViewModel
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun BicyclesUI(viewModel: BicyclesViewModel) {
@@ -141,24 +142,52 @@ fun BicyclesPage(viewModel: BicyclesViewModel) {
 }
 
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun BicycleImageCell(index: Int, bicycle: Bicycle, viewModel: BicyclesViewModel) {
     Box {
-        KamelImage(
-            resource = asyncPainterResource(bicycle.storagePath),
-            contentDescription = bicycle.bikename,
-            contentScale = ContentScale.Crop,
-            onLoading = { CircularProgressIndicator() },
-            onFailure = { Text("loading failed") },
-            modifier = Modifier.fillMaxWidth()
-                .aspectRatio(1.0f)
-                .padding(5.dp)
-                .clickable {
-                    viewModel.selectBicycle(bicycle)
-                }
-        )
+        if (bicycle.imageBitmap != null) {
+            Image(
+                bitmap = bicycle.imageBitmap!!,
+                contentDescription = bicycle.bikename,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth()
+                    .aspectRatio(1.0f)
+                    .padding(5.dp)
+                    .clickable {
+                        viewModel.selectBicycle(bicycle)
+                    },
+            )
+        } else {
+            Image(
+                painter = painterResource("defaultbicycle.jpg"),
+                contentDescription = bicycle.bikename,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxWidth()
+                    .aspectRatio(1.0f)
+                    .padding(5.dp)
+                    .clickable {
+                        viewModel.selectBicycle(bicycle)
+                    },
+            )
+        }
+        /*   use with url of images:
+            KamelImage(
+                resource = asyncPainterResource(bicycle.storagePath),
+                contentDescription = bicycle.bikename,
+                contentScale = ContentScale.Crop,
+                onLoading = { CircularProgressIndicator() },
+                onFailure = { Text("loading failed") },
+                modifier = Modifier.fillMaxWidth()
+                    .aspectRatio(1.0f)
+                    .padding(5.dp)
+                    .clickable {
+                        viewModel.selectBicycle(bicycle)
+                    }
+            )
+            */
         Row {
-            val secondayColor = colors.onSecondary
+            val onSecondaryColor = colors.onSecondary
             Text(
                 text = "$index",
                 style = typography.h6,
@@ -166,18 +195,17 @@ fun BicycleImageCell(index: Int, bicycle: Bicycle, viewModel: BicyclesViewModel)
                 modifier = Modifier.padding(8.dp)
                     .drawBehind {
                         drawCircle(
-                            color = secondayColor,
-                            radius = this.size.maxDimension*0.75F
+                            color = onSecondaryColor,
+                            radius = this.size.maxDimension * 0.6F
                         )
                     },
             )
             Text(
                 text = bicycle.bikename,
                 style = typography.h6,
-                modifier = Modifier.padding(top=8.dp, bottom=8.dp, start=14.dp),
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp, start = 12.dp),
             )
 
         }
     }
-
-}
+    }

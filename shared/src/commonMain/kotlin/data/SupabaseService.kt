@@ -84,17 +84,17 @@ object SupabaseService {
             .upload(path = imagePath, data = image, upsert = false)
     }
 
-    suspend fun downloadImage(imagePath: String) : String {
-        val result =  try {
+    suspend fun downloadImage(imagePath: String) : ByteArray? {
+        return try {
             supabaseClient.storage
-                .from("bicycles-imgs").authenticatedUrl(path = imagePath)
+                //FIXME get render url or download image?
+                //.from("bicycles-imgs").createSignedUrl(path = imagePath, expiresIn = Duration.parse("60s"))
+                .from("bicycles-imgs").downloadPublic(path = imagePath) //e: Bucket not found (Bucket not found)
         } catch (e: Exception) {
-            println("XXXXXX - Jobfails: "+e.message)
-            //if supabase fails to load the image, return a default image
-            return "https://www.michaeljob.ch/bicycles/defaultbicycle.jpg"
+            //if supabase fails to load the image, return null
+            println("XXXXXXXXXXXXXXXXXXX - e: ${e.message}")
+            null
         }
-        println("XXXXXXXXXXXXXXXXXXX - Result: $result")
-        return result
     }
 
 

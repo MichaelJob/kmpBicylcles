@@ -4,6 +4,7 @@ package model
 import data.Bicycle
 import data.SupabaseService
 import data.coreComponent
+import data.toImageBitmap
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,14 +36,16 @@ class BicyclesViewModel : ViewModel() {
             _uiState.update {
                 it.copy(email = email, password = pw, isRegistered = isRegistered)
             }
-            //signIn()
+            signIn()
         }
     }
 
     private fun updateBicycles() {
         viewModelScope.launch {
             val bicycles = getBicycles().onEach { bicycle ->
-                bicycle.storagePath = SupabaseService.downloadImage(bicycle.imagepath)
+                //FIXME: get path or image?
+                //bicycle.storagePath = SupabaseService.downloadImage(bicycle.imagepath)
+                bicycle.imageBitmap = SupabaseService.downloadImage(bicycle.imagepath)?.toImageBitmap()
             }
             _uiState.update {
                 it.copy(bicycles = bicycles)

@@ -48,6 +48,8 @@ kotlin {
                 implementation("io.github.jan-tennert.supabase:gotrue-kt")
                 //datastore preferences
                 implementation("androidx.datastore:datastore-preferences-core:1.1.0-beta02")
+                //convert ByteArray to ImageBitmap:
+                implementation("org.jetbrains.kotlinx:kotlinx-io-jvm:0.1.16")
             }
         }
         val androidMain by getting {
@@ -70,7 +72,7 @@ kotlin {
             iosSimulatorArm64Main.dependsOn(this)
 
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:2.3.1")
+                implementation("io.ktor:ktor-client-darwin:2.3.7")
             }
         }
     }

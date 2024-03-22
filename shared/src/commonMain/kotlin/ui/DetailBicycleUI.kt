@@ -1,5 +1,6 @@
 package ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,9 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import data.Bicycle
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
 import model.BicyclesViewModel
+import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.painterResource
 
 
 @Composable
@@ -89,6 +90,7 @@ fun BicycleDetails(currentBicycle: Bicycle) {
             BicycleDetailRow(label = "Category:", value = currentBicycle.category)
             BicycleDetailRow(label = "Year:", value = currentBicycle.year)
             BicycleDetailRow(label = "Price:", value = currentBicycle.price)
+            BicycleDetailRow(label = "img:", value = currentBicycle.storagePath)
             BicycleDetailColumn(label = "Description:", value = currentBicycle.description)
         }
     )
@@ -115,19 +117,29 @@ fun BicycleDetailColumn(label: String, value: String) {
     }
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun CurrentBicycleImage(bicycle: Bicycle, showSmall: Boolean = false) {
     Row (
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
-        KamelImage(
-            resource = asyncPainterResource(bicycle.storagePath),
-            contentDescription = bicycle.bikename,
-            contentScale = ContentScale.Fit,
-            modifier = Modifier.fillMaxWidth(if (showSmall) 0.2F else 1.0F)
-                .aspectRatio(1.0f)
-        )
+        if (bicycle.imageBitmap!=null){
+            Image(
+                bitmap = bicycle.imageBitmap!!,
+                contentDescription = bicycle.bikename,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxWidth(if (showSmall) 0.2F else 1.0F)
+                    .aspectRatio(1.0f)
+            )
+        } else {
+            Image(
+                painter = painterResource("defaultbicycle.jpg"),
+                contentDescription = bicycle.bikename,
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxWidth(if (showSmall) 0.2F else 1.0F)
+                    .aspectRatio(1.0f),
+            )
+        }
     }
-
 }
