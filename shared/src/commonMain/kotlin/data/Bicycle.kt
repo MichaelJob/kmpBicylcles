@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlin.random.Random
 
 @Serializable
@@ -16,7 +17,7 @@ data class Bicycle @OptIn(ExperimentalSerializationApi::class) constructor(
     @EncodeDefault var price : String = "",
     @EncodeDefault var imagepath : String = "defaultbicycle.jpg",
 ){
-   var imageBitmap: ImageBitmap? = null
+    @Transient var imageBitmap: ImageBitmap? = null // transient property to hold the image, does not get serialized on updates
 }
 
 
