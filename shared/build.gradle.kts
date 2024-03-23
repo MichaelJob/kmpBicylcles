@@ -60,6 +60,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-android:2.3.9")
                 //startup context for android datastore preferences
                 api("androidx.startup:startup-runtime:1.1.1")
+                api("com.google.accompanist:accompanist-permissions:0.32.0")
             }
         }
         val iosX64Main by getting

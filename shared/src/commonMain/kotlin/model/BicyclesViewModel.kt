@@ -1,9 +1,11 @@
 package model
 
 
+import androidx.compose.ui.graphics.ImageBitmap
 import data.Bicycle
 import data.SupabaseService
 import data.coreComponent
+import data.toByteArray
 import data.toImageBitmap
 import dev.icerock.moko.mvvm.viewmodel.ViewModel
 import kotlinx.coroutines.delay
@@ -111,80 +113,108 @@ class BicyclesViewModel : ViewModel() {
         //TODO: show toast bikename stored?
     }
 
-    fun remove() {
-        viewModelScope.launch {
-            uiState.value.currentBicycle?.let { removeBicycle(it) }
-            updateStateToMainView()
-        }
-    }
 
-    private suspend fun updateStateToMainView() {
-        delay(50)
-        _uiState.update {
-            it.copy(showEdit = false, showDetail = false, currentBicycle = null)
-        }
-        updateBicycles()
-    }
+ fun remove() {
+     viewModelScope.launch {
+         uiState.value.currentBicycle?.let { removeBicycle(it) }
+         updateStateToMainView()
+     }
+ }
 
-    private suspend fun removeBicycle(bicycle: Bicycle) {
-        SupabaseService.deleteBicycle(bicycle.id)
-    }
+ private suspend fun updateStateToMainView() {
+     delay(50)
+     _uiState.update {
+         it.copy(showEdit = false, showDetail = false, currentBicycle = null)
+     }
+     updateBicycles()
+ }
+
+ private suspend fun removeBicycle(bicycle: Bicycle) {
+     SupabaseService.deleteBicycle(bicycle.id)
+ }
 
 
-    fun signUp() {
-        viewModelScope.launch {
-            println("uiState.value.email, uiState.value.password" + uiState.value.email + uiState.value.password)
-            SupabaseService.signUpNewUser(uiState.value.email, uiState.value.password)
-            coreComponent.appPreferences.changeRegistered(true)
-            _uiState.update {
-                it.copy(isLoggedIn = true, isRegistered = true)
-            }
-        }
-    }
+ fun signUp() {
+     viewModelScope.launch {
+         println("uiState.value.email, uiState.value.password" + uiState.value.email + uiState.value.password)
+         SupabaseService.signUpNewUser(uiState.value.email, uiState.value.password)
+         coreComponent.appPreferences.changeRegistered(true)
+         _uiState.update {
+             it.copy(isLoggedIn = true, isRegistered = true)
+         }
+     }
+ }
 
-    fun signIn() {
-        if (!uiState.value.isLoggedIn && uiState.value.email.isNotEmpty() && uiState.value.password.isNotEmpty()) {
+ fun signIn() {
+     if (!uiState.value.isLoggedIn && uiState.value.email.isNotEmpty() && uiState.value.password.isNotEmpty()) {
+         viewModelScope.launch {
+             val logInErrorMsg = SupabaseService.signInWithEmail(uiState.value.email, uiState.value.password)
+             if (logInErrorMsg=="") {
+                 _uiState.update {
+                     it.copy(isLoggedIn = true, errorMsg = "")
+                 }
+                 updateBicycles()
+             } else {
+                 _uiState.update {
+                     it.copy(isLoggedIn = false, errorMsg = logInErrorMsg)
+                 }
+             }
+         }
+     }
+ }
+
+ fun logout() {
+     if (uiState.value.isLoggedIn) {
+         viewModelScope.launch {
+             SupabaseService.logout()
+             _uiState.update {
+                 it.copy(
+                     bicycles = emptyList(),
+                     currentBicycle = null,
+                     showDetail = false,
+                     showEdit = false,
+                     password = "",
+                     isLoggedIn = false
+                 )
+             }
+         }
+     }
+ }
+
+ fun setRegistered() {
+     _uiState.update {
+         it.copy(
+             isRegistered = true
+         )
+     }
+ }
+
+    fun saveNewImage(bitmap: ImageBitmap) {
+        val updatedCurrentBicycle = uiState.value.currentBicycle
+        updatedCurrentBicycle?.let {
+            it.imageBitmap = bitmap
+            it.imagepath = "${it.bikename}.png"
+
             viewModelScope.launch {
-                val logInErrorMsg = SupabaseService.signInWithEmail(uiState.value.email, uiState.value.password)
-                if (logInErrorMsg=="") {
-                    _uiState.update {
-                        it.copy(isLoggedIn = true, errorMsg = "")
-                    }
-                    updateBicycles()
-                } else {
-                    _uiState.update {
-                        it.copy(isLoggedIn = false, errorMsg = logInErrorMsg)
-                    }
-                }
+                uploadImage(bitmap)
+                saveBicycle(it)
+            }
+
+            _uiState.update { state ->
+                state.copy(
+                    currentBicycle =  it
+                )
             }
         }
     }
 
-    fun logout() {
-        if (uiState.value.isLoggedIn) {
-            viewModelScope.launch {
-                SupabaseService.logout()
-                _uiState.update {
-                    it.copy(
-                        bicycles = emptyList(),
-                        currentBicycle = null,
-                        showDetail = false,
-                        showEdit = false,
-                        password = "",
-                        isLoggedIn = false
-                    )
-                }
+    private suspend fun uploadImage(bitmap: ImageBitmap) {
+        val byteArray = bitmap.toByteArray()
+        uiState.value.currentBicycle?.let {
+            if (byteArray != null) {
+                SupabaseService.uploadImage(it.bikename, byteArray)
             }
         }
     }
-
-    fun setRegistered() {
-        _uiState.update {
-            it.copy(
-                isRegistered = true
-            )
-        }
-    }
-
 
 }

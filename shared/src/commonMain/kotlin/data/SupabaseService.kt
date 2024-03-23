@@ -82,9 +82,8 @@ object SupabaseService {
     }
 
     suspend fun uploadImage(imagePath: String, image: ByteArray) {
-        supabaseClient.storage
-            .from("bicycles-imgs")
-            .upload(path = imagePath, data = image, upsert = false)
+        val bucket = supabaseClient.storage.from("bicycles-imgs")
+        bucket.upload("$imagePath.png", image, upsert = true)
     }
 
     suspend fun downloadImage(imagePath: String) : ByteArray? {
