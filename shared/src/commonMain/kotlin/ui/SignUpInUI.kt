@@ -1,8 +1,10 @@
 package ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -11,6 +13,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
@@ -52,6 +55,14 @@ fun SignUp(viewModel: BicyclesViewModel) {
         }) {
             Text("Sign up as new user")
         }
+        Spacer(modifier = Modifier.padding(20.dp))
+        Text(
+            text="Already have an account? Sign in",
+            color = MaterialTheme.colors.primary,
+            modifier = Modifier.clickable {
+                viewModel.setRegistered()
+            }
+        )
     }
 }
 

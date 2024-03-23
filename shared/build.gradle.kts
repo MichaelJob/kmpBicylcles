@@ -35,14 +35,14 @@ kotlin {
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
                 implementation("media.kamel:kamel-image:0.6.0")
-                implementation("io.ktor:ktor-client-core:2.3.8")
-                implementation("io.ktor:ktor-client-content-negotiation:2.3.8")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.8")
+                implementation("io.ktor:ktor-client-core:2.3.9")
+                implementation("io.ktor:ktor-client-content-negotiation:2.3.9")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.9")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
                 api("dev.icerock.moko:mvvm-core:0.16.1") // only ViewModel, EventsDispatcher, Dispatchers.UI
                 api("dev.icerock.moko:mvvm-compose:0.16.1") // api mvvm-core, getViewModel for Compose Multiplatfrom
                 //Supabase
-                implementation(project.dependencies.platform("io.github.jan-tennert.supabase:bom:2.1.5"))
+                implementation(project.dependencies.platform("io.github.jan-tennert.supabase:bom:2.2.2"))
                 implementation("io.github.jan-tennert.supabase:postgrest-kt")
                 implementation("io.github.jan-tennert.supabase:storage-kt")
                 implementation("io.github.jan-tennert.supabase:gotrue-kt")
@@ -57,8 +57,8 @@ kotlin {
                 api("androidx.activity:activity-compose:1.8.2")
                 api("androidx.appcompat:appcompat:1.6.1")
                 api("androidx.core:core-ktx:1.12.0")
-                implementation("io.ktor:ktor-client-android:2.3.8")
-                //startuo context for android datastore preferences
+                implementation("io.ktor:ktor-client-android:2.3.9")
+                //startup context for android datastore preferences
                 api("androidx.startup:startup-runtime:1.1.1")
             }
         }
@@ -72,7 +72,7 @@ kotlin {
             iosSimulatorArm64Main.dependsOn(this)
 
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:2.3.7")
+                implementation("io.ktor:ktor-client-darwin:2.3.9")
             }
         }
     }

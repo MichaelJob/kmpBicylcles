@@ -8,6 +8,7 @@ import io.github.jan.supabase.gotrue.auth
 import io.github.jan.supabase.gotrue.providers.builtin.Email
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.storage.Storage
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.HttpHeaders
@@ -71,7 +72,9 @@ object SupabaseService {
         return try {
             supabaseClient
                 .from("bicycles")
-                .select()
+                .select() {
+                    order(column = "year", order = Order.ASCENDING)
+                }
                 .decodeList<Bicycle>()
         } catch (e: Exception) {
             listOf(Bicycle(id=0,"failed to load bicycles"))
@@ -87,16 +90,13 @@ object SupabaseService {
     suspend fun downloadImage(imagePath: String) : ByteArray? {
         return try {
             supabaseClient.storage
-                //FIXME get render url or download image?
-                //.from("bicycles-imgs").createSignedUrl(path = imagePath, expiresIn = Duration.parse("60s"))
-                .from("bicycles-imgs").downloadPublic(path = imagePath) //e: Bucket not found (Bucket not found)
+                .from("bicycles-imgs")
+                .downloadAuthenticated(imagePath)
         } catch (e: Exception) {
             //if supabase fails to load the image, return null
-            println("XXXXXXXXXXXXXXXXXXX - e: ${e.message}")
+            println("e: ${e.message}")
             null
         }
     }
-
-
 
 }

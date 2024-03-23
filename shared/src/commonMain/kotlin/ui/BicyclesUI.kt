@@ -6,7 +6,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -35,6 +37,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import data.Bicycle
@@ -120,7 +123,8 @@ fun BicyclesPage(viewModel: BicyclesViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val bicycles by mutableStateOf(uiState.bicycles)
     LazyColumn(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 30.dp, vertical = 10.dp),
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(10.dp),
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -153,7 +157,7 @@ fun BicycleImageCell(index: Int, bicycle: Bicycle, viewModel: BicyclesViewModel)
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxWidth()
                     .aspectRatio(1.0f)
-                    .padding(5.dp)
+                    .padding(0.dp)
                     .clickable {
                         viewModel.selectBicycle(bicycle)
                     },
@@ -171,28 +175,17 @@ fun BicycleImageCell(index: Int, bicycle: Bicycle, viewModel: BicyclesViewModel)
                     },
             )
         }
-        /*   use with url of images:
-            KamelImage(
-                resource = asyncPainterResource(bicycle.storagePath),
-                contentDescription = bicycle.bikename,
-                contentScale = ContentScale.Crop,
-                onLoading = { CircularProgressIndicator() },
-                onFailure = { Text("loading failed") },
-                modifier = Modifier.fillMaxWidth()
-                    .aspectRatio(1.0f)
-                    .padding(5.dp)
-                    .clickable {
-                        viewModel.selectBicycle(bicycle)
-                    }
-            )
-            */
-        Row {
+
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
             val onSecondaryColor = colors.onSecondary
             Text(
                 text = "$index",
                 style = typography.h6,
                 color = colors.onPrimary,
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier
                     .drawBehind {
                         drawCircle(
                             color = onSecondaryColor,
@@ -203,8 +196,18 @@ fun BicycleImageCell(index: Int, bicycle: Bicycle, viewModel: BicyclesViewModel)
             Text(
                 text = bicycle.bikename,
                 style = typography.h6,
-                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp, start = 12.dp),
+                color = colors.onPrimary,
+                modifier = Modifier
+                    .drawBehind {
+                        drawRect(
+                            color = onSecondaryColor,
+                            alpha = 0.5F,
+                            size = this.size*1.25F, //scale up by 1/4
+                            topLeft = Offset(this.size.width*-0.125F, this.size.height*-0.125F), //move up,left by 1/8
+                        )
+                    },
             )
+            Spacer(modifier = Modifier.padding(2.dp))
 
         }
     }

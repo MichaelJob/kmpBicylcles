@@ -43,8 +43,6 @@ class BicyclesViewModel : ViewModel() {
     private fun updateBicycles() {
         viewModelScope.launch {
             val bicycles = getBicycles().onEach { bicycle ->
-                //FIXME: get path or image?
-                //bicycle.storagePath = SupabaseService.downloadImage(bicycle.imagepath)
                 bicycle.imageBitmap = SupabaseService.downloadImage(bicycle.imagepath)?.toImageBitmap()
             }
             _uiState.update {
@@ -177,6 +175,14 @@ class BicyclesViewModel : ViewModel() {
                     )
                 }
             }
+        }
+    }
+
+    fun setRegistered() {
+        _uiState.update {
+            it.copy(
+                isRegistered = true
+            )
         }
     }
 

@@ -16,7 +16,6 @@ data class Bicycle @OptIn(ExperimentalSerializationApi::class) constructor(
     @EncodeDefault var price : String = "",
     @EncodeDefault var imagepath : String = "defaultbicycle.jpg",
 ){
-   var storagePath: String = "https://www.michaeljob.ch/bicycles/defaultbicycle.jpg"
    var imageBitmap: ImageBitmap? = null
 }
 

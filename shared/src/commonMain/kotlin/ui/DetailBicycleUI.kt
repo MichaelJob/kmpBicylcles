@@ -90,7 +90,6 @@ fun BicycleDetails(currentBicycle: Bicycle) {
             BicycleDetailRow(label = "Category:", value = currentBicycle.category)
             BicycleDetailRow(label = "Year:", value = currentBicycle.year)
             BicycleDetailRow(label = "Price:", value = currentBicycle.price)
-            BicycleDetailRow(label = "img:", value = currentBicycle.storagePath)
             BicycleDetailColumn(label = "Description:", value = currentBicycle.description)
         }
     )
