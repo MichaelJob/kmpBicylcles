@@ -1,9 +1,9 @@
 # KMP Android / iOS - Bicylces App - take notes of your bikes, to have details in case of theft or loss.
 
-Starting point was: https://github.com/SebastianAigner/my-bird-app
-added supabase as backend: https://supabase.com/docs/guides/getting-started/quickstarts/kotlin
-and datastore preferences - thx to: https://funkymuse.dev/posts/create-data-store-kmp/
-with camera/gallery integration based on: https://medium.com/@qasimnawaz_70901/kotlin-multiplatform-compose-unified-image-capture-and-gallery-picker-with-permission-handling-8a8f8cc9cc82
+Starting point was: https://github.com/SebastianAigner/my-bird-app  - thx to Sebastian Aigner  
+added supabase as backend: https://supabase.com/docs/guides/getting-started/quickstarts/kotlin  
+and datastore preferences - thx to: https://funkymuse.dev/posts/create-data-store-kmp/  
+with camera/gallery integration based on: https://medium.com/@qasimnawaz_70901/kotlin-multiplatform-compose-unified-image-capture-and-gallery-picker-with-permission-handling-8a8f8cc9cc82  
 
 
 [![official project](http://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
