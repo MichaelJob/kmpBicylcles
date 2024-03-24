@@ -10,11 +10,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,58 +27,85 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import data.Bicycle
+import model.BicyclesViewModel
 
 
 @Composable
-fun BicycleEditDetails(currentBicycle: Bicycle) {
+fun BicycleEditDetails(viewModel: BicyclesViewModel) {
     val scrollState = rememberScrollState()
-    Column(
-        verticalArrangement = Arrangement.spacedBy(5.dp),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp).verticalScroll(scrollState),
-        content = {
-            BicycleEditField(
-                label = "Bicycle name:",
-                value = currentBicycle.bikename,
-                onValueChange = { currentBicycle.bikename = it },
-            )
-            BicycleEditField(
-                label = "Category:",
-                value = currentBicycle.category,
-                onValueChange = { currentBicycle.category = it },
-            )
-            BicycleEditField(
-                label = "Year:",
-                value = currentBicycle.year,
-                onValueChange = { currentBicycle.year = it },
-            )
-            BicycleEditField(
-                label = "Price:",
-                value = currentBicycle.price,
-                onValueChange = { currentBicycle.price = it },
-            )
-            BicycleEditField(
-                label = "Description:",
-                singleLine = false,
-                value = currentBicycle.description,
-                onValueChange = { currentBicycle.description = it },
-            )
-        }
-    )
+    val uiState by viewModel.uiState.collectAsState()
+    with(uiState.currentBicycle!!) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp)
+                .verticalScroll(scrollState),
+            content = {
+                BicycleEditField(
+                    label = "Bicycle name:",
+                    value = bikename,
+                    onValueChange = {
+                        bikename = it
+                        viewModel.checkBicyclenameIsUnique()
+                    },
+                )
+                BicycleEditField(
+                    label = "Frame #:",
+                    value = framenumber,
+                    onValueChange = { framenumber = it
+                        true
+                    },
+                )
+                BicycleEditField(
+                    label = "Category:",
+                    value = category,
+                    onValueChange = { category = it
+                        true
+                    },
+                )
+                BicycleEditField(
+                    label = "Year:",
+                    value = year,
+                    onValueChange = { year = it
+                        true
+                    },
+                )
+                BicycleEditField(
+                    label = "Price:",
+                    value = price,
+                    onValueChange = { price = it
+                        true
+                    },
+                )
+                BicycleEditField(
+                    label = "Description:",
+                    singleLine = false,
+                    value = description,
+                    onValueChange = {
+                        description = it
+                        true
+                    },
+                )
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun BicycleEditField(label: String, value: String, singleLine: Boolean = true, onValueChange: (String) -> Unit) {
+fun BicycleEditField(label: String, value: String, singleLine: Boolean = true, onValueChange: (String) -> Boolean) {
     val keyboard = LocalSoftwareKeyboardController.current
     var stateValue by remember { mutableStateOf(value) }
+    var valid by remember { mutableStateOf(true) }
     OutlinedTextField(
         value = stateValue,
         onValueChange = {
             stateValue = it //updates view
-            onValueChange.invoke(it) //updates model
+            valid = onValueChange.invoke(it) //updates model
                         },
         singleLine = singleLine,
+        colors = TextFieldDefaults.textFieldColors(
+            textColor = if (valid) MaterialTheme.colors.onSurface else MaterialTheme.colors.error
+        ),
         trailingIcon = {
             IconButton(onClick = {
                 keyboard?.hide()

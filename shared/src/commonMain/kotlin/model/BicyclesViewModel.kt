@@ -24,6 +24,7 @@ data class BicyclesUiState(
     val errorMsg: String = "",
     val isLoggedIn: Boolean = false,
     val isRegistered: Boolean = false,
+    val isLoading: Boolean = false,
 )
 
 class BicyclesViewModel : ViewModel() {
@@ -43,12 +44,21 @@ class BicyclesViewModel : ViewModel() {
     }
 
     private fun updateBicycles() {
+        _uiState.update {
+            it.copy(isLoading = true)
+        }
         viewModelScope.launch {
             val bicycles = getBicycles().onEach { bicycle ->
-                bicycle.imageBitmap = SupabaseService.downloadImage(bicycle.imagepath)?.toImageBitmap()
+                val imgpaths = bicycle.imgpaths
+                val imageBitmaps = mutableListOf<Pair<String,ImageBitmap>>()
+                for (imgpath in imgpaths.split(";")){
+                    val imageBitmap = SupabaseService.downloadImage(imgpath)?.toImageBitmap()
+                    if (imageBitmap!=null) imageBitmaps.add(Pair(imgpath,imageBitmap))
+                }
+                bicycle.imagesBitmaps = imageBitmaps
             }
             _uiState.update {
-                it.copy(bicycles = bicycles)
+                it.copy(bicycles = bicycles, isLoading = false)
             }
         }
     }
@@ -192,11 +202,13 @@ class BicyclesViewModel : ViewModel() {
     fun saveNewImage(bitmap: ImageBitmap) {
         val updatedCurrentBicycle = uiState.value.currentBicycle
         updatedCurrentBicycle?.let {
-            it.imageBitmap = bitmap
-            it.imagepath = "${it.bikename}.png"
+            val imgcount = it.imagesBitmaps.size
+            val newimagename = "${it.bikename}-$imgcount.png"
+            it.imagesBitmaps = it.imagesBitmaps.plus(Pair(newimagename,bitmap))
+            it.imgpaths = it.imagesBitmaps.joinToString(";") { pair -> pair.first }
 
             viewModelScope.launch {
-                uploadImage(bitmap)
+                uploadImage(newimagename, bitmap)
                 saveBicycle(it)
             }
 
@@ -208,13 +220,34 @@ class BicyclesViewModel : ViewModel() {
         }
     }
 
-    private suspend fun uploadImage(bitmap: ImageBitmap) {
+    private suspend fun uploadImage(newimagename: String, bitmap: ImageBitmap) {
         val byteArray = bitmap.toByteArray()
+        if (byteArray != null) {
+            SupabaseService.uploadImage(newimagename, byteArray)
+        }
+    }
+
+    fun deleteImage(image2delete: Pair<String, ImageBitmap>){
         uiState.value.currentBicycle?.let {
-            if (byteArray != null) {
-                SupabaseService.uploadImage(it.bikename, byteArray)
+            it.imagesBitmaps = it.imagesBitmaps.minus(image2delete)
+            it.imgpaths = it.imagesBitmaps.joinToString(";") { pair -> pair.first }
+            viewModelScope.launch {
+                SupabaseService.deleteImage(image2delete.first)
+                saveBicycle(it)
+                _uiState.update { state ->
+                    state.copy(
+                        currentBicycle =  it
+                    )
+                }
             }
         }
+    }
+
+    fun checkBicyclenameIsUnique(): Boolean {
+        val currentName = uiState.value.currentBicycle?.bikename
+        return uiState.value.bicycles
+            .filter { it!=uiState.value.currentBicycle }
+            .none{it.bikename==currentName}
     }
 
 }

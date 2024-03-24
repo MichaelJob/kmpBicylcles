@@ -5,12 +5,16 @@ import PermissionStatus
 import PermissionType
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
@@ -19,7 +23,12 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme.typography
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -69,7 +78,8 @@ fun BicycleDetailPage(viewModel: BicyclesViewModel) {
                         PermissionType.GALLERY -> launchGallery = true
                     }
                 }
-            else -> {
+
+                else -> {
                     permissionRationalDialog = true
                 }
             }
@@ -84,7 +94,7 @@ fun BicycleDetailPage(viewModel: BicyclesViewModel) {
                 it?.toImageBitmap()
             }
             newImageBitmap = bitmap
-            if (bitmap!=null) viewModel.saveNewImage(bitmap)
+            if (bitmap != null) viewModel.saveNewImage(bitmap)
         }
     }
 
@@ -94,7 +104,7 @@ fun BicycleDetailPage(viewModel: BicyclesViewModel) {
                 it?.toImageBitmap()
             }
             newImageBitmap = bitmap
-            if (bitmap!=null) viewModel.saveNewImage(bitmap)
+            if (bitmap != null) viewModel.saveNewImage(bitmap)
         }
     }
 
@@ -151,21 +161,26 @@ fun BicycleDetailPage(viewModel: BicyclesViewModel) {
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         Column(modifier = Modifier.fillMaxWidth().weight(0.9F)) {
-            if (uiState.showEdit) {
-                IconButton(
-                    onClick = { imageSourceOptionDialog=true }
-                ){
-                    Icon(Icons.Filled.Edit, "add a new picture")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (uiState.showEdit && uiState.currentBicycle?.bikename?.isNotEmpty() == true) {
+                    IconButton(
+                        onClick = { imageSourceOptionDialog = true }
+                    ) {
+                        Icon(Icons.Filled.AddCircle, "add a new picture")
+                    }
                 }
+                BicycleImages(viewModel = viewModel)
             }
-            CurrentBicycleImage(newImageBitmap, uiState.currentBicycle!!, showSmall = uiState.showEdit)
             Text(
                 text = "Bicycle details:",
                 style = typography.h6,
                 modifier = Modifier.padding(10.dp)
             )
             if (uiState.showEdit) {
-                BicycleEditDetails(uiState.currentBicycle!!)
+                BicycleEditDetails(viewModel = viewModel)
             } else {
                 BicycleDetails(uiState.currentBicycle!!)
             }
@@ -180,21 +195,21 @@ fun BicycleDetailPage(viewModel: BicyclesViewModel) {
             if (uiState.showEdit) {
                 //on Edit Detail View
                 Button(onClick = { viewModel.showEdit(false) }) {
-                    Text("Back")
+                    Icon(Icons.Filled.KeyboardArrowLeft, "back")
                 }
                 Button(onClick = { viewModel.remove() }) {
-                    Text("Remove bicycle")
+                    Icon(Icons.Filled.Delete, "delete")
                 }
                 Button(onClick = { viewModel.save() }) {
-                    Text("Save")
+                    Icon(Icons.Default.Check, "save")
                 }
             } else {
                 //on Detail View
                 Button(onClick = { viewModel.showDetail(false) }) {
-                    Text("Back")
+                    Icon(Icons.Filled.KeyboardArrowLeft, "back")
                 }
                 Button(onClick = { viewModel.showEdit() }) {
-                    Text("Edit")
+                    Icon(Icons.Filled.Edit, "edit")
                 }
             }
 
@@ -210,6 +225,7 @@ fun BicycleDetails(currentBicycle: Bicycle) {
         modifier = Modifier.fillMaxWidth().padding(horizontal = 15.dp).verticalScroll(scrollState),
         content = {
             BicycleDetailRow(label = "Bicycle name:", value = currentBicycle.bikename)
+            BicycleDetailRow(label = "Frame #:", value = currentBicycle.framenumber)
             BicycleDetailRow(label = "Category:", value = currentBicycle.category)
             BicycleDetailRow(label = "Year:", value = currentBicycle.year)
             BicycleDetailRow(label = "Price:", value = currentBicycle.price)
@@ -231,7 +247,7 @@ fun BicycleDetailRow(label: String, value: String) {
 
 @Composable
 fun BicycleDetailColumn(label: String, value: String) {
-    Column (
+    Column(
         Modifier.fillMaxWidth().padding(2.dp),
     ) {
         Text(label)
@@ -241,35 +257,41 @@ fun BicycleDetailColumn(label: String, value: String) {
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-fun CurrentBicycleImage(newImageBitmap: ImageBitmap?, bicycle: Bicycle, showSmall: Boolean = false) {
-    Row (
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        if (newImageBitmap!=null){
-            Image(
-                bitmap = newImageBitmap,
-                contentDescription = bicycle.bikename,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxWidth(if (showSmall) 0.2F else 1.0F)
-                    .aspectRatio(1.0f)
-            )
-        } else if (bicycle.imageBitmap!=null){
-            Image(
-                bitmap = bicycle.imageBitmap!!,
-                contentDescription = bicycle.bikename,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxWidth(if (showSmall) 0.2F else 1.0F)
-                    .aspectRatio(1.0f)
-            )
-        } else {
-            Image(
-                painter = painterResource("defaultbicycle.jpg"),
-                contentDescription = bicycle.bikename,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxWidth(if (showSmall) 0.2F else 1.0F)
-                    .aspectRatio(1.0f),
-            )
+fun BicycleImages(viewModel: BicyclesViewModel) {
+    val uiState by viewModel.uiState.collectAsState()
+    val showEdit = uiState.showEdit
+    with(uiState.currentBicycle!!) {
+        LazyRow(
+            modifier = Modifier.fillMaxWidth().height(250.dp),
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            items(imagesBitmaps) {
+                Box {
+                    Image(
+                        bitmap = it.second,
+                        contentDescription = it.first,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxWidth(if (showEdit) 0.2F else 1.0F)
+                            .aspectRatio(1.0f)
+                    )
+                    if (showEdit) {
+                        IconButton(onClick = { viewModel.deleteImage(it) }) {
+                            Icon(Icons.Filled.Close, "delete")
+                        }
+                    }
+                }
+            }
+            if (imagesBitmaps.isEmpty()) { //show default if no images present
+                item {
+                    Image(
+                        painter = painterResource("defaultbicycle.jpg"),
+                        contentDescription = "defaultbicycle",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxWidth(if (showEdit) 0.2F else 1.0F)
+                            .aspectRatio(1.0f),
+                    )
+                }
+            }
         }
     }
 }

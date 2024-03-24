@@ -83,7 +83,7 @@ object SupabaseService {
 
     suspend fun uploadImage(imagePath: String, image: ByteArray) {
         val bucket = supabaseClient.storage.from("bicycles-imgs")
-        bucket.upload("$imagePath.png", image, upsert = true)
+        bucket.upload(imagePath, image, upsert = true)
     }
 
     suspend fun downloadImage(imagePath: String) : ByteArray? {
@@ -95,6 +95,17 @@ object SupabaseService {
             //if supabase fails to load the image, return null
             println("e: ${e.message}")
             null
+        }
+    }
+
+    suspend fun deleteImage(imagePath: String){
+        try {
+            supabaseClient.storage
+                .from("bicycles-imgs")
+                .delete(imagePath)
+        } catch (e: Exception) {
+            //if supabase fails to delete the image
+            println("e: ${e.message}")
         }
     }
 

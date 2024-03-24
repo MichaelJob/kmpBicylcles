@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -69,7 +68,8 @@ fun BicyclesUI(viewModel: BicyclesViewModel) {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (uiState.showDetail) uiState.currentBicycle?.bikename ?: "your bicycle" else "Bicycles",
+                            text = if (uiState.showDetail) uiState.currentBicycle?.bikename
+                                ?: "your bicycle" else "Bicycles",
                             modifier = Modifier.padding(10.dp),
                             style = typography.h6,
                         )
@@ -128,19 +128,23 @@ fun BicyclesPage(viewModel: BicyclesViewModel) {
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        if (bicycles.isEmpty()) {
-            item {
-                Text(
-                    text = "no bicycles yet",
-                    modifier = Modifier.padding(40.dp)
-                )
-            }
+        if (uiState.isLoading) {
             item {
                 CircularProgressIndicator(modifier = Modifier.padding(40.dp))
             }
-        }
-        itemsIndexed(bicycles) { index, bicycle ->
-            BicycleImageCell(index+1, bicycle, viewModel)
+        } else {
+            if (bicycles.isEmpty()) {
+                item {
+                    Text(
+                        text = "no bicycles yet",
+                        modifier = Modifier.padding(40.dp)
+                    )
+                }
+            } else {
+                itemsIndexed(bicycles) { index, bicycle ->
+                    BicycleImageCell(index + 1, bicycle, viewModel)
+                }
+            }
         }
     }
 }
@@ -150,10 +154,10 @@ fun BicyclesPage(viewModel: BicyclesViewModel) {
 @Composable
 fun BicycleImageCell(index: Int, bicycle: Bicycle, viewModel: BicyclesViewModel) {
     Box {
-        if (bicycle.imageBitmap != null) {
+        if (bicycle.imagesBitmaps.isNotEmpty()) {
             Image(
-                bitmap = bicycle.imageBitmap!!,
-                contentDescription = bicycle.bikename,
+                bitmap = bicycle.imagesBitmaps.first().second,
+                contentDescription = bicycle.imagesBitmaps.first().first,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxWidth()
                     .aspectRatio(1.0f)
@@ -165,7 +169,7 @@ fun BicycleImageCell(index: Int, bicycle: Bicycle, viewModel: BicyclesViewModel)
         } else {
             Image(
                 painter = painterResource("defaultbicycle.jpg"),
-                contentDescription = bicycle.bikename,
+                contentDescription = "defaultbicycle",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxWidth()
                     .aspectRatio(1.0f)
@@ -176,9 +180,8 @@ fun BicycleImageCell(index: Int, bicycle: Bicycle, viewModel: BicyclesViewModel)
             )
         }
 
-        Row(
+        Box(
             modifier = Modifier.fillMaxWidth().padding(20.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             val onSecondaryColor = colors.onSecondary
             Text(
@@ -186,10 +189,11 @@ fun BicycleImageCell(index: Int, bicycle: Bicycle, viewModel: BicyclesViewModel)
                 style = typography.h6,
                 color = colors.onPrimary,
                 modifier = Modifier
+                    .align(Alignment.CenterStart)
                     .drawBehind {
                         drawCircle(
                             color = onSecondaryColor,
-                            radius = this.size.maxDimension * 0.6F
+                            radius = (this.size.maxDimension * 0.6F)
                         )
                     },
             )
@@ -198,17 +202,19 @@ fun BicycleImageCell(index: Int, bicycle: Bicycle, viewModel: BicyclesViewModel)
                 style = typography.h6,
                 color = colors.onPrimary,
                 modifier = Modifier
+                    .align(Alignment.Center)
                     .drawBehind {
                         drawRect(
                             color = onSecondaryColor,
                             alpha = 0.5F,
-                            size = this.size*1.25F, //scale up by 1/4
-                            topLeft = Offset(this.size.width*-0.125F, this.size.height*-0.125F), //move up,left by 1/8
+                            size = this.size * 1.25F, //scale up by 1/4
+                            topLeft = Offset(
+                                this.size.width * -0.125F,
+                                this.size.height * -0.125F
+                            ), //move up,left by 1/8
                         )
                     },
             )
-            Spacer(modifier = Modifier.padding(2.dp))
-
         }
     }
-    }
+}

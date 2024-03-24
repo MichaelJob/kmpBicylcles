@@ -11,14 +11,20 @@ import kotlin.random.Random
 data class Bicycle @OptIn(ExperimentalSerializationApi::class) constructor(
     @EncodeDefault val id : Int = Random.Default.nextInt(),
     @EncodeDefault var bikename: String = "",
+    @EncodeDefault var framenumber: String = "",
     @EncodeDefault var category: String = "",
     @EncodeDefault var description : String = "",
     @EncodeDefault var year : String = "",
     @EncodeDefault var price : String = "",
-    @EncodeDefault var imagepath : String = "defaultbicycle.jpg",
+    @EncodeDefault var imgpaths : String = "",
 ){
-    @Transient var imageBitmap: ImageBitmap? = null // transient property to hold the image, does not get serialized on updates
+    // transient property to hold the images, does not get serialized on updates
+    @Transient var imagesBitmaps: List<Pair<String,ImageBitmap>> = emptyList()
 }
+
+
+
+
 
 
 expect fun ByteArray.toImageBitmap(): ImageBitmap?
