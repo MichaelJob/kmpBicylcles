@@ -32,13 +32,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import createPermissionsManager
@@ -57,162 +52,151 @@ import rememberGalleryManager
 fun BicycleDetailPage(viewModel: BicyclesViewModel) {
     val uiState by viewModel.uiState.collectAsState()
 
-    //camera/gallery based on medium.com/@qasimnawaz_70901/kotlin-multiplatform-compose-unified-image-capture-and-gallery-picker-with-permission-handling-8a8f8cc9cc82
-    val coroutineScope = rememberCoroutineScope()
-    var newImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
-    var imageSourceOptionDialog by remember { mutableStateOf(value = false) }
-    var launchCamera by remember { mutableStateOf(value = false) }
-    var launchGallery by remember { mutableStateOf(value = false) }
-    var launchSetting by remember { mutableStateOf(value = false) }
-    var permissionRationalDialog by remember { mutableStateOf(value = false) }
-
-    val permissionsManager = createPermissionsManager(object : PermissionCallback {
-        override fun onPermissionStatus(
-            permissionType: PermissionType,
-            status: PermissionStatus
-        ) {
-            when (status) {
-                PermissionStatus.GRANTED -> {
-                    when (permissionType) {
-                        PermissionType.CAMERA -> launchCamera = true
-                        PermissionType.GALLERY -> launchGallery = true
-                    }
-                }
-
-                else -> {
-                    permissionRationalDialog = true
-                }
-            }
-        }
-
-
-    })
-
-    val cameraManager = rememberCameraManager {
-        coroutineScope.launch {
-            val bitmap = withContext(Dispatchers.Default) {
-                it?.toImageBitmap()
-            }
-            newImageBitmap = bitmap
-            if (bitmap != null) viewModel.saveNewImage(bitmap)
-        }
-    }
-
-    val galleryManager = rememberGalleryManager {
-        coroutineScope.launch {
-            val bitmap = withContext(Dispatchers.Default) {
-                it?.toImageBitmap()
-            }
-            newImageBitmap = bitmap
-            if (bitmap != null) viewModel.saveNewImage(bitmap)
-        }
-    }
-
-    if (imageSourceOptionDialog) {
-        ImageSourceOptionDialog(onDismissRequest = {
-            imageSourceOptionDialog = false
-        }, onGalleryRequest = {
-            imageSourceOptionDialog = false
-            launchGallery = true
-        }, onCameraRequest = {
-            imageSourceOptionDialog = false
-            launchCamera = true
-        })
-    }
-    if (launchGallery) {
-        if (permissionsManager.isPermissionGranted(PermissionType.GALLERY)) {
-            galleryManager.launch()
-        } else {
-            permissionsManager.askPermission(PermissionType.GALLERY)
-        }
-        launchGallery = false
-    }
-    if (launchCamera) {
-        if (permissionsManager.isPermissionGranted(PermissionType.CAMERA)) {
-            cameraManager.launch()
-        } else {
-            permissionsManager.askPermission(PermissionType.CAMERA)
-        }
-        launchCamera = false
-    }
-    if (launchSetting) {
-        permissionsManager.launchSettings()
-        launchSetting = false
-    }
-    if (permissionRationalDialog) {
-        AlertMessageDialog(title = "Permission Required",
-            message = "To add bicycle pictures, please grant this permission. You can manage permissions in your device settings.",
-            positiveButtonText = "Settings",
-            negativeButtonText = "Cancel",
-            onPositiveClick = {
-                permissionRationalDialog = false
-                launchSetting = true
-
-            },
-            onNegativeClick = {
-                permissionRationalDialog = false
-            })
-
-    }
-
-    Column(
-        Modifier.fillMaxSize().padding(horizontal = 5.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Column(modifier = Modifier.fillMaxWidth().weight(0.9F)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+    with(viewModel) {
+        //camera/gallery based on medium.com/@qasimnawaz_70901/kotlin-multiplatform-compose-unified-image-capture-and-gallery-picker-with-permission-handling-8a8f8cc9cc82
+        val permissionsManager = createPermissionsManager(object : PermissionCallback {
+            override fun onPermissionStatus(
+                permissionType: PermissionType,
+                status: PermissionStatus
             ) {
-                if (uiState.showEdit && uiState.currentBicycle?.bikename?.isNotEmpty() == true) {
-                    IconButton(
-                        onClick = { imageSourceOptionDialog = true }
-                    ) {
-                        Icon(Icons.Filled.AddCircle, "add a new picture")
+                when (status) {
+                    PermissionStatus.GRANTED -> {
+                        when (permissionType) {
+                            PermissionType.CAMERA -> launchCamera = true
+                            PermissionType.GALLERY -> launchGallery = true
+                        }
+                    }
+                    else -> {
+                        permissionRationalDialog = true
                     }
                 }
-                BicycleImages(viewModel = viewModel)
             }
-            Text(
-                text = "Bicycle details:",
-                style = typography.h6,
-                modifier = Modifier.padding(10.dp)
-            )
-            if (uiState.showEdit) {
-                BicycleEditDetails(viewModel = viewModel)
-            } else {
-                BicycleDetails(uiState.currentBicycle!!)
+        })
+
+        val cameraManager = rememberCameraManager {
+            viewModelScope.launch {
+                val bitmap = withContext(Dispatchers.Default) {
+                    it?.toImageBitmap()
+                }
+                newImageBitmap = bitmap
+                if (bitmap != null) saveNewImage(bitmap)
             }
         }
-        Row(
-            modifier = Modifier.fillMaxSize()
-                .weight(0.1F)
-                .padding(vertical = 4.dp, horizontal = 30.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            if (uiState.showEdit) {
-                //on Edit Detail View
-                Button(onClick = { viewModel.showEdit(false) }) {
-                    Icon(Icons.Filled.KeyboardArrowLeft, "back")
+
+        val galleryManager = rememberGalleryManager {
+            viewModelScope.launch {
+                val bitmap = withContext(Dispatchers.Default) {
+                    it?.toImageBitmap()
                 }
-                Button(onClick = { viewModel.remove() }) {
-                    Icon(Icons.Filled.Delete, "delete")
-                }
-                Button(onClick = { viewModel.save() }) {
-                    Icon(Icons.Default.Check, "save")
-                }
+                newImageBitmap = bitmap
+                if (bitmap != null) saveNewImage(bitmap)
+            }
+        }
+
+        if (imageSourceOptionDialog) {
+            ImageSourceOptionDialog(onDismissRequest = {
+                imageSourceOptionDialog = false
+            }, onGalleryRequest = {
+                imageSourceOptionDialog = false
+                launchGallery = true
+            }, onCameraRequest = {
+                imageSourceOptionDialog = false
+                launchCamera = true
+            })
+        }
+        if (launchGallery) {
+            if (permissionsManager.isPermissionGranted(PermissionType.GALLERY)) {
+                galleryManager.launch()
             } else {
-                //on Detail View
-                Button(onClick = { viewModel.showDetail(false) }) {
-                    Icon(Icons.Filled.KeyboardArrowLeft, "back")
+                permissionsManager.askPermission(PermissionType.GALLERY)
+            }
+            launchGallery = false
+        }
+        if (launchCamera) {
+            if (permissionsManager.isPermissionGranted(PermissionType.CAMERA)) {
+                cameraManager.launch()
+            } else {
+                permissionsManager.askPermission(PermissionType.CAMERA)
+            }
+            launchCamera = false
+        }
+        if (launchSetting) {
+            permissionsManager.launchSettings()
+            launchSetting = false
+        }
+        if (permissionRationalDialog) {
+            AlertMessageDialog(title = "Permission Required",
+                message = "To add bicycle pictures, please grant this permission. You can manage permissions in your device settings.",
+                positiveButtonText = "Settings",
+                negativeButtonText = "Cancel",
+                onPositiveClick = {
+                    permissionRationalDialog = false
+                    launchSetting = true
+
+                },
+                onNegativeClick = {
+                    permissionRationalDialog = false
+                })
+        }
+
+        Column(
+            Modifier.fillMaxSize().padding(horizontal = 5.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.fillMaxWidth().weight(0.9F)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (uiState.showEdit && uiState.currentBicycle?.bikename?.isNotEmpty() == true) {
+                        IconButton(
+                            onClick = { imageSourceOptionDialog = true }
+                        ) {
+                            Icon(Icons.Filled.AddCircle, "add a new picture")
+                        }
+                    }
+                    BicycleImages(viewModel = viewModel)
                 }
-                Button(onClick = { viewModel.showEdit() }) {
-                    Icon(Icons.Filled.Edit, "edit")
+                Text(
+                    text = "Bicycle details:",
+                    style = typography.h6,
+                    modifier = Modifier.padding(10.dp)
+                )
+                if (uiState.showEdit) {
+                    BicycleEditDetails(viewModel = viewModel)
+                } else {
+                    BicycleDetails(uiState.currentBicycle!!)
                 }
             }
-
+            Row(
+                modifier = Modifier.fillMaxSize()
+                    .weight(0.1F)
+                    .padding(vertical = 4.dp, horizontal = 30.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                if (uiState.showEdit) {
+                    //on Edit Detail View
+                    Button(onClick = { viewModel.showEdit(false) }) {
+                        Icon(Icons.Filled.KeyboardArrowLeft, "back")
+                    }
+                    Button(onClick = { viewModel.remove() }) {
+                        Icon(Icons.Filled.Delete, "delete")
+                    }
+                    Button(onClick = { viewModel.save() }) {
+                        Icon(Icons.Default.Check, "save")
+                    }
+                } else {
+                    //on Detail View
+                    Button(onClick = { viewModel.showDetail(false) }) {
+                        Icon(Icons.Filled.KeyboardArrowLeft, "back")
+                    }
+                    Button(onClick = { viewModel.showEdit() }) {
+                        Icon(Icons.Filled.Edit, "edit")
+                    }
+                }
+            }
         }
     }
 }

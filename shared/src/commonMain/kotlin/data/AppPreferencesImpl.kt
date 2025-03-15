@@ -17,6 +17,8 @@ interface AppPreferences {
     suspend fun changeEmail(email: String): Preferences
     suspend fun getPassword(): String
     suspend fun changePassword(pw: String): Preferences
+    suspend fun getUserUID(): String
+    suspend fun changeUserUID(useruid: String): Preferences
 }
 
 internal class AppPreferencesImpl(
@@ -29,12 +31,14 @@ internal class AppPreferencesImpl(
         private const val IS_REGISTERED = "isRegistered"
         private const val EMAIL_KEY = "email"
         private const val PW_KEY = "pw"
+        private const val USERUID_KEY = "useruid"
     }
 
     private val darkModeKey = booleanPreferencesKey("$PREFS_TAG_KEY$IS_DARK_MODE_ENABLED")
     private val registeredKey = booleanPreferencesKey("$PREFS_TAG_KEY$IS_REGISTERED")
     private val emailKey = stringPreferencesKey("$PREFS_TAG_KEY$EMAIL_KEY")
     private val pwKey = stringPreferencesKey("$PREFS_TAG_KEY$PW_KEY")
+    private val useruidKey = stringPreferencesKey("$PREFS_TAG_KEY$USERUID_KEY")
 
     override suspend fun isDarkModeEnabled() = dataStore.data.map { preferences ->
         preferences[darkModeKey] ?: false
@@ -66,5 +70,13 @@ internal class AppPreferencesImpl(
 
     override suspend fun changePassword(pw: String)= dataStore.edit { preferences ->
         preferences[pwKey] = pw
+    }
+
+    override suspend fun getUserUID(): String = dataStore.data.map { preferences ->
+        preferences[useruidKey] ?: ""
+    }.first()
+
+    override suspend fun changeUserUID(useruid: String)= dataStore.edit { preferences ->
+        preferences[useruidKey] = useruid
     }
 }

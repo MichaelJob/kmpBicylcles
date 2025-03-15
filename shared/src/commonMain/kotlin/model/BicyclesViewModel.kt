@@ -1,6 +1,9 @@
 package model
 
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import data.Bicycle
 import data.SupabaseService
@@ -28,8 +31,19 @@ data class BicyclesUiState(
 )
 
 class BicyclesViewModel : ViewModel() {
+
     private val _uiState = MutableStateFlow(BicyclesUiState())
     val uiState = _uiState.asStateFlow()
+    private var useruid: String = ""
+
+    //camera/gallery based on medium.com/@qasimnawaz_70901/kotlin-multiplatform-compose-unified-image-capture-and-gallery-picker-with-permission-handling-8a8f8cc9cc82
+    var newImageBitmap by mutableStateOf<ImageBitmap?>(null)
+    var imageSourceOptionDialog by mutableStateOf(value = false)
+    var launchCamera by mutableStateOf(value = false)
+    var launchGallery by mutableStateOf(value = false)
+    var launchSetting by mutableStateOf(value = false)
+    var permissionRationalDialog by mutableStateOf(value = false)
+
 
     init {
         viewModelScope.launch {
@@ -64,7 +78,7 @@ class BicyclesViewModel : ViewModel() {
     }
 
     private suspend fun getBicycles(): List<Bicycle> {
-        return SupabaseService.getData()
+        return SupabaseService.getData(useruid = useruid)
     }
 
     fun selectBicycle(bicycle: Bicycle) {
@@ -86,8 +100,12 @@ class BicyclesViewModel : ViewModel() {
     }
 
     fun createNewBicycle() {
-        _uiState.update {
-            it.copy(currentBicycle = Bicycle(), showDetail = true, showEdit = true)
+        if (useruid!=""){
+            _uiState.update {
+                it.copy(currentBicycle = Bicycle(useruid = useruid), showDetail = true, showEdit = true)
+            }
+        } else {
+            println("useruid was empty!")
         }
     }
 
@@ -146,11 +164,13 @@ class BicyclesViewModel : ViewModel() {
 
  fun signUp() {
      viewModelScope.launch {
-         println("uiState.value.email, uiState.value.password" + uiState.value.email + uiState.value.password)
-         SupabaseService.signUpNewUser(uiState.value.email, uiState.value.password)
+         val userid = SupabaseService.signUpNewUser(uiState.value.email, uiState.value.password)
          coreComponent.appPreferences.changeRegistered(true)
          _uiState.update {
-             it.copy(isLoggedIn = true, isRegistered = true)
+             it.copy(
+                 isLoggedIn = true,
+                 isRegistered = true,
+             )
          }
      }
  }
@@ -158,16 +178,17 @@ class BicyclesViewModel : ViewModel() {
  fun signIn() {
      if (!uiState.value.isLoggedIn && uiState.value.email.isNotEmpty() && uiState.value.password.isNotEmpty()) {
          viewModelScope.launch {
-             val logInErrorMsg = SupabaseService.signInWithEmail(uiState.value.email, uiState.value.password)
-             if (logInErrorMsg=="") {
+             val logInMsgUserIdOrError = SupabaseService.signInWithEmail(uiState.value.email, uiState.value.password)
+             if (logInMsgUserIdOrError.contains(other="error", ignoreCase = false)) {
+                 _uiState.update {
+                     it.copy(isLoggedIn = false, errorMsg = logInMsgUserIdOrError)
+                 }
+             } else {
                  _uiState.update {
                      it.copy(isLoggedIn = true, errorMsg = "")
                  }
+                 useruid = logInMsgUserIdOrError
                  updateBicycles()
-             } else {
-                 _uiState.update {
-                     it.copy(isLoggedIn = false, errorMsg = logInErrorMsg)
-                 }
              }
          }
      }
@@ -202,8 +223,8 @@ class BicyclesViewModel : ViewModel() {
     fun saveNewImage(bitmap: ImageBitmap) {
         val updatedCurrentBicycle = uiState.value.currentBicycle
         updatedCurrentBicycle?.let {
-            val imgcount = it.imagesBitmaps.size
-            val newimagename = "${it.bikename}-$imgcount.png"
+            val imgcount = it.imagesBitmaps.size+1
+            val newimagename = "$useruid-${it.bikename}-$imgcount.png"
             it.imagesBitmaps = it.imagesBitmaps.plus(Pair(newimagename,bitmap))
             it.imgpaths = it.imagesBitmaps.joinToString(";") { pair -> pair.first }
 

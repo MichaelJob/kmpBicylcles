@@ -17,8 +17,9 @@ import io.ktor.http.HttpHeaders
 object SupabaseService {
 
     private var supabaseClient: SupabaseClient = createSupabaseClient(
-        supabaseUrl = "https://bknhmpxtmpputpcsxzyw.supabase.co", //FIXME: use env variables, change key after implementation, debug
-        supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrbmhtcHh0bXBwdXRwY3N4enl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDkyMTI1NjEsImV4cCI6MjAyNDc4ODU2MX0.iP0p92RdoBEonJfmuEfHE0GT3amgEpxdL4dm_dEWFgM"
+        //FIXME: use env variables, change key after implementation, debug
+        supabaseUrl = "https://zhahkgaeexekntixwjoa.supabase.co",
+        supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoYWhrZ2FlZXhla250aXh3am9hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwMjk0MDUsImV4cCI6MjA1NzYwNTQwNX0.r4Wk-1HjQmm0w3Tig-SpdxlD5NfHA5yoPpYspa3p7bE"
     ) {
         HttpHeaders.Authorization
         install(Postgrest)
@@ -26,11 +27,12 @@ object SupabaseService {
         install(Auth)
     }
 
-    suspend fun signUpNewUser(mail: String, pw: String) {
+    suspend fun signUpNewUser(mail: String, pw: String): String {
         supabaseClient.auth.signUpWith(Email) {
             email = mail
             password = pw
         }
+        return getSignedInUserId()
     }
 
     suspend fun signInWithEmail(mail: String, pw: String): String {
@@ -42,7 +44,11 @@ object SupabaseService {
         } catch (ex : BadRequestRestException){
           return "Error: ${ex.message}"
         }
-        return ""
+        return getSignedInUserId()
+    }
+
+    private fun getSignedInUserId(): String{
+        return supabaseClient.auth.currentUserOrNull()?.id ?: ""
     }
 
     suspend fun logout() {
@@ -68,11 +74,14 @@ object SupabaseService {
             }
     }
 
-    suspend fun getData(): List<Bicycle> {
+    suspend fun getData(useruid: String): List<Bicycle> {
         return try {
             supabaseClient
                 .from("bicycles")
                 .select() {
+                    filter {
+                        eq("useruid", useruid)
+                    }
                     order(column = "year", order = Order.ASCENDING)
                 }
                 .decodeList<Bicycle>()

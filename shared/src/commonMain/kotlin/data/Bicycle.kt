@@ -17,6 +17,7 @@ data class Bicycle @OptIn(ExperimentalSerializationApi::class) constructor(
     @EncodeDefault var year : String = "",
     @EncodeDefault var price : String = "",
     @EncodeDefault var imgpaths : String = "",
+    @EncodeDefault var useruid : String = "",
 ){
     // transient property to hold the images, does not get serialized on updates
     @Transient var imagesBitmaps: List<Pair<String,ImageBitmap>> = emptyList()
